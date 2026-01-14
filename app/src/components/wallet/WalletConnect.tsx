@@ -1,12 +1,25 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { shortenAddress } from '@/lib/solana';
 
 export const WalletConnect: FC = () => {
   const { publicKey, connected } = useWallet();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-32 bg-zinc-800 rounded-lg animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-3">
