@@ -115,7 +115,7 @@ export class SurveillanceMonitor {
    */
   private generateRecommendations(
     exposed: number,
-    protected: number,
+    protectedCount: number,
     risk: 'low' | 'medium' | 'high'
   ): string[] {
     const recommendations: string[] = [];
@@ -136,7 +136,7 @@ export class SurveillanceMonitor {
       recommendations.push('Your transaction history is highly exposed to trackers');
     }
 
-    if (protected === 0) {
+    if (protectedCount === 0) {
       recommendations.push('Start by depositing to Privacy Cash pool');
     }
 
@@ -177,25 +177,25 @@ export class SurveillanceMonitor {
     usesStealthMode: boolean,
     protectedTxCount: number
   ): string[] {
-    const protected: string[] = [];
+    const protectedData: string[] = [];
 
     if (hasPrivateBalance) {
-      protected.push('Portion of balance hidden in privacy pool');
-      protected.push('True holdings are obfuscated');
+      protectedData.push('Portion of balance hidden in privacy pool');
+      protectedData.push('True holdings are obfuscated');
     }
 
     if (usesStealthMode) {
-      protected.push('Stealth mode transfers hide sender identity');
-      protected.push('Transaction amounts encrypted with Bulletproofs');
+      protectedData.push('Stealth mode transfers hide sender identity');
+      protectedData.push('Transaction amounts encrypted with Bulletproofs');
     }
 
     if (protectedTxCount > 0) {
-      protected.push(`${protectedTxCount} transactions protected with ZK proofs`);
-      protected.push('Deposit-withdrawal links are broken');
-      protected.push('Anonymity set provides plausible deniability');
+      protectedData.push(`${protectedTxCount} transactions protected with ZK proofs`);
+      protectedData.push('Deposit-withdrawal links are broken');
+      protectedData.push('Anonymity set provides plausible deniability');
     }
 
-    return protected;
+    return protectedData;
   }
 }
 
