@@ -1,65 +1,198 @@
-import Image from "next/image";
+'use client';
+
+import Link from 'next/link';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
 export default function Home() {
+  const { connected } = useWallet();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(168,85,247,0.1),transparent_50%)]" />
+
+          <div className="container mx-auto px-4 py-24 md:py-32 relative">
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full">
+                <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                <span className="text-sm text-purple-300">Built for Privacy Hack 2026</span>
+              </div>
+
+              {/* Main heading */}
+              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  Your transactions.
+                </span>
+                <br />
+                <span className="text-zinc-100">Your business.</span>
+                <br />
+                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  Your Shieldlane.
+                </span>
+              </h1>
+
+              {/* Description */}
+              <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl mx-auto">
+                A privacy-preserving wallet wrapper for high-value Solana users. Shield your transaction history and balances with zero-knowledge proofs.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                <Link
+                  href={connected ? "/dashboard" : "#"}
+                  className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium transition-all transform hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25"
+                >
+                  {connected ? "Go to Dashboard" : "Connect Wallet to Start"}
+                </Link>
+                <Link
+                  href="/learn"
+                  className="w-full sm:w-auto px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg font-medium transition-all"
+                >
+                  Learn More
+                </Link>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-12">
+                {[
+                  { label: 'ZK-SNARK Proofs', value: 'Privacy Cash' },
+                  { label: 'Bulletproofs', value: 'ShadowWire' },
+                  { label: 'Network', value: 'Solana Devnet' },
+                  { label: 'Open Source', value: 'GitHub' },
+                ].map((stat, i) => (
+                  <div key={i} className="text-center">
+                    <div className="text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                      {stat.value}
+                    </div>
+                    <div className="text-sm text-zinc-500 mt-1">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-24 bg-zinc-900/50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+                Privacy-First Features
+              </h2>
+
+              <div className="grid md:grid-cols-3 gap-8">
+                {/* Feature 1 */}
+                <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-purple-500/50 transition-all group">
+                  <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span className="text-2xl">🔒</span>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Private Balance Viewing</h3>
+                  <p className="text-zinc-400">
+                    Compare what surveillance tools see versus your actual balance. Shield your holdings in privacy pools.
+                  </p>
+                </div>
+
+                {/* Feature 2 */}
+                <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-blue-500/50 transition-all group">
+                  <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span className="text-2xl">👻</span>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Stealth Mode Transfers</h3>
+                  <p className="text-zinc-400">
+                    Two privacy modes: External (sender hidden) or Internal (everything hidden) using Bulletproofs.
+                  </p>
+                </div>
+
+                {/* Feature 3 */}
+                <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-green-500/50 transition-all group">
+                  <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Surveillance Monitor</h3>
+                  <p className="text-zinc-400">
+                    See what trackers can detect. Get privacy score and recommendations to improve your privacy posture.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Technology Section */}
+        <section className="py-24">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Built with Cutting-Edge Privacy Technology
+              </h2>
+              <p className="text-xl text-zinc-400">
+                Shieldlane combines multiple cryptographic primitives to provide military-grade privacy for your Solana transactions.
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-6 pt-8">
+                <div className="p-6 bg-gradient-to-br from-purple-900/20 to-transparent border border-purple-500/20 rounded-xl">
+                  <h3 className="text-lg font-semibold mb-2">Privacy Cash SDK</h3>
+                  <p className="text-zinc-400 text-sm">
+                    ZK-SNARK powered privacy pools that break the link between deposits and withdrawals.
+                  </p>
+                </div>
+
+                <div className="p-6 bg-gradient-to-br from-blue-900/20 to-transparent border border-blue-500/20 rounded-xl">
+                  <h3 className="text-lg font-semibold mb-2">ShadowWire/ShadowPay</h3>
+                  <p className="text-zinc-400 text-sm">
+                    Bulletproofs and ElGamal encryption for hiding transaction amounts and participants.
+                  </p>
+                </div>
+
+                <div className="p-6 bg-gradient-to-br from-green-900/20 to-transparent border border-green-500/20 rounded-xl">
+                  <h3 className="text-lg font-semibold mb-2">Helius RPC</h3>
+                  <p className="text-zinc-400 text-sm">
+                    Enterprise-grade Solana RPC infrastructure for reliable and fast blockchain access.
+                  </p>
+                </div>
+
+                <div className="p-6 bg-gradient-to-br from-orange-900/20 to-transparent border border-orange-500/20 rounded-xl">
+                  <h3 className="text-lg font-semibold mb-2">On-Chain Verification</h3>
+                  <p className="text-zinc-400 text-sm">
+                    All privacy operations are verified on Solana blockchain. Trustless and transparent.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-24 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center space-y-6">
+              <h2 className="text-4xl md:text-5xl font-bold">
+                Ready to Shield Your Privacy?
+              </h2>
+              <p className="text-xl text-zinc-400">
+                Connect your wallet and start protecting your transaction history today.
+              </p>
+              <Link
+                href={connected ? "/dashboard" : "#"}
+                className="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium text-lg transition-all transform hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25"
+              >
+                {connected ? "Open Dashboard" : "Connect Wallet"}
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
+
+      <Footer />
     </div>
   );
 }
