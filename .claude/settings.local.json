@@ -5,7 +5,10 @@
       "Bash(yarn dev)",
       "Bash(TURBOPACK_ROOT=/Users/emlanis/Documents/shieldlane/app yarn dev:*)",
       "Bash(chmod:*)",
-      "Bash(npx next dev --help:*)"
+      "Bash(npx next dev --help:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(pkill:*)"
     ]
   }
 }
