@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(yarn add:*)"
+      "Bash(yarn add:*)",
+      "Bash(yarn dev)",
+      "Bash(TURBOPACK_ROOT=/Users/emlanis/Documents/shieldlane/app yarn dev:*)",
+      "Bash(chmod:*)",
+      "Bash(npx next dev --help:*)"
     ]
   }
 }
