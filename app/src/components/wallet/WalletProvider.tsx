@@ -1,8 +1,8 @@
 'use client';
 
-import { FC, ReactNode, useMemo } from 'react';
+import { FC, ReactNode, useMemo, useCallback } from 'react';
 import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { WalletAdapterNetwork, WalletError } from '@solana/wallet-adapter-base';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import {
   PhantomWalletAdapter,
@@ -41,9 +41,21 @@ export const WalletProvider: FC<WalletProviderProps> = ({ children }) => {
     [network]
   );
 
+  // Handle wallet errors silently for user rejections
+  const onError = useCallback((error: WalletError) => {
+    // Silently ignore user rejection errors - this is normal behavior
+    if (error.message?.includes('User rejected') ||
+        error.name === 'WalletConnectionError' ||
+        error.message?.includes('rejected')) {
+      return;
+    }
+    // Log other errors for debugging
+    console.error('Wallet error:', error);
+  }, []);
+
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <SolanaWalletProvider wallets={wallets} autoConnect>
+      <SolanaWalletProvider wallets={wallets} autoConnect onError={onError}>
         <WalletModalProvider>
           {children}
         </WalletModalProvider>
