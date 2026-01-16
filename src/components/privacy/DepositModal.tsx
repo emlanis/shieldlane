@@ -67,11 +67,15 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
       if (typeof result.data === 'string') {
         // Entire response is a base64 string
         transactionData = result.data;
+      } else if (result.data.unsigned_tx_base64) {
+        // ShadowPay API format
+        transactionData = result.data.unsigned_tx_base64;
+        console.log('[DepositModal] Found unsigned_tx_base64 field');
       } else if (result.data.transaction) {
-        // Response has a 'transaction' field
+        // Alternative: 'transaction' field
         transactionData = result.data.transaction;
       } else if (result.data.serialized_transaction) {
-        // Response has a 'serialized_transaction' field
+        // Alternative: 'serialized_transaction' field
         transactionData = result.data.serialized_transaction;
       } else {
         // API doesn't return an unsigned transaction - show detailed error
@@ -85,7 +89,12 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
         );
       }
 
+      if (!transactionData) {
+        throw new Error('Transaction data is null after extraction');
+      }
+
       console.log('[DepositModal] Found transaction data, deserializing...');
+      console.log('[DepositModal] Transaction length:', transactionData.length, 'characters');
 
       let transaction: Transaction | VersionedTransaction;
       try {

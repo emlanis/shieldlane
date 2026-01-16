@@ -111,11 +111,16 @@ export interface ShadowIdRegistrationResponse {
 }
 
 export interface DepositResponse {
-  transaction_id: string;
+  success: boolean;
   amount: number;
-  status: string;
-  transaction?: string; // Base64 encoded unsigned transaction
-  serialized_transaction?: string; // Alternative field name
+  unsigned_tx_base64: string; // Base64 encoded unsigned transaction
+  pool_address: string;
+  user_balance_pda: string;
+  // Optional alternative field names for compatibility
+  transaction?: string;
+  serialized_transaction?: string;
+  transaction_id?: string;
+  status?: string;
 }
 
 export interface BalanceResponse {
