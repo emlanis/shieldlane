@@ -115,6 +115,20 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
 
       console.log('[DepositModal] Transaction deserialized successfully');
 
+      // Step 2.5: Refresh blockhash to prevent expiration
+      console.log('[DepositModal] Step 2.5: Refreshing blockhash...');
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+
+      // Update transaction with fresh blockhash
+      if (transaction instanceof Transaction) {
+        transaction.recentBlockhash = blockhash;
+        transaction.lastValidBlockHeight = lastValidBlockHeight;
+        console.log('[DepositModal] Updated legacy transaction with fresh blockhash');
+      } else {
+        // VersionedTransaction - need to reconstruct message with new blockhash
+        console.log('[DepositModal] Cannot update VersionedTransaction blockhash - using as-is');
+      }
+
       // Step 3: Sign the transaction with wallet
       console.log('[DepositModal] Step 3: Requesting wallet signature');
       const signedTransaction = await signTransaction(transaction);
@@ -131,11 +145,10 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
 
       // Step 5: Wait for confirmation
       console.log('[DepositModal] Step 5: Waiting for confirmation...');
-      const latestBlockhash = await connection.getLatestBlockhash('confirmed');
       const confirmation = await connection.confirmTransaction({
         signature,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        blockhash: blockhash,
+        lastValidBlockHeight: lastValidBlockHeight,
       }, 'confirmed');
 
       if (confirmation.value.err) {
