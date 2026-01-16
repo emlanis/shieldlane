@@ -64,75 +64,111 @@ export class PrivacyCashBrowserClient {
 
   /**
    * Deposit SOL into Privacy Cash pool (shield)
-   *
-   * NOTE: Light Protocol SDK v0.22.0 requires direct Signer access (secretKey),
-   * which is not available in browser wallets for security reasons.
-   * This is a placeholder implementation until browser-compatible SDK is available.
+   * Uses Supabase backend to manage server-side keypairs
    */
-  async deposit(_amount: number): Promise<DepositResult> {
-    if (!this.wallet.publicKey) {
+  async deposit(amount: number): Promise<DepositResult> {
+    if (!this.wallet.publicKey || !this.wallet.signMessage) {
       throw new Error('Wallet not connected');
     }
 
-    // Light Protocol SDK v0.22.0 is not compatible with browser wallets
-    // because it requires access to the wallet's secret key for signing.
-    // Browser wallets (Phantom, Solflare, etc.) never expose secret keys.
-    throw new Error(
-      'Privacy Cash deposits are not yet available. ' +
-      'Light Protocol SDK v0.22.0 requires wallet secret key access, ' +
-      'which browser wallets do not provide for security reasons. ' +
-      'Use ShadowPay for private transfers instead.'
-    );
+    // Get wallet signature for authorization
+    const message = `Privacy Cash Deposit\nAmount: ${amount} lamports\nTimestamp: ${Date.now()}`;
+    const messageBytes = new TextEncoder().encode(message);
+    const signature = await this.wallet.signMessage(messageBytes);
+    const signatureBase58 = Buffer.from(signature).toString('base64');
+
+    // Call API to create unsigned transaction
+    const response = await fetch('/api/privacy-cash/deposit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        walletAddress: this.wallet.publicKey.toBase58(),
+        amount,
+        signature: signatureBase58,
+        message,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!result.success || !result.unsigned_tx_base64) {
+      throw new Error(result.error || 'Failed to create deposit transaction');
+    }
+
+    // Return deposit result with placeholder values
+    // (actual signature will be generated when user signs and broadcasts)
+    return {
+      signature: 'pending' as TransactionSignature,
+      commitment: result.unsigned_tx_base64,
+      leafIndex: 0,
+      merkleTree: result.privacyPubkey,
+    };
   }
 
   /**
    * Withdraw SOL from Privacy Cash pool (unshield)
+   * Server-side signing using encrypted keypair stored in Supabase
    */
-  async withdraw(_amount: number, _recipient?: PublicKey): Promise<WithdrawResult> {
-    if (!this.wallet.publicKey) {
+  async withdraw(amount: number, recipient?: PublicKey): Promise<WithdrawResult> {
+    if (!this.wallet.publicKey || !this.wallet.signMessage) {
       throw new Error('Wallet not connected');
     }
 
-    throw new Error(
-      'Privacy Cash withdrawals are not yet available. ' +
-      'Light Protocol SDK v0.22.0 requires wallet secret key access, ' +
-      'which browser wallets do not provide for security reasons. ' +
-      'Use ShadowPay for private transfers instead.'
-    );
+    const recipientAddress = recipient?.toBase58() || this.wallet.publicKey.toBase58();
+
+    // Get wallet signature for authorization
+    const message = `Privacy Cash Withdrawal\nAmount: ${amount} lamports\nRecipient: ${recipientAddress}\nTimestamp: ${Date.now()}`;
+    const messageBytes = new TextEncoder().encode(message);
+    const signature = await this.wallet.signMessage(messageBytes);
+    const signatureBase58 = Buffer.from(signature).toString('base64');
+
+    // Call API to execute withdrawal (server-side signing)
+    const response = await fetch('/api/privacy-cash/withdraw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        walletAddress: this.wallet.publicKey.toBase58(),
+        amount,
+        recipient: recipientAddress,
+        signature: signatureBase58,
+        message,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!result.success || !result.signature) {
+      throw new Error(result.error || 'Failed to withdraw');
+    }
+
+    return {
+      signature: result.signature as TransactionSignature,
+      amount,
+    };
   }
 
   /**
-   * Get private balance (sum of unspent UTXOs)
+   * Get private balance from Privacy Cash account
    */
   async getPrivateBalance(): Promise<number> {
     if (!this.wallet.publicKey) {
       return 0;
     }
 
-    if (!this.encryptionKey) {
-      try {
-        await this.initialize();
-      } catch (error) {
-        console.error('Failed to initialize encryption:', error);
-        return 0;
-      }
-    }
-
     try {
-      const storedUtxos = await this.storage.getUnspentUtxos(
-        this.wallet.publicKey.toBase58()
+      const response = await fetch(
+        `/api/privacy-cash/balance?walletAddress=${this.wallet.publicKey.toBase58()}`
       );
 
-      let total = 0;
-      for (const stored of storedUtxos) {
-        const decrypted = await this.encryption.decryptUtxo(
-          stored.encrypted,
-          this.encryptionKey!
-        );
-        total += decrypted.amount;
+      const result = await response.json();
+
+      if (!result.success) {
+        console.error('Failed to get balance:', result.error);
+        return 0;
       }
 
-      return total / 1e9; // Convert lamports to SOL
+      // Return balance in SOL (API returns lamports)
+      return (result.balance || 0) / 1e9;
     } catch (error) {
       console.error('Failed to get private balance:', error);
       return 0;
