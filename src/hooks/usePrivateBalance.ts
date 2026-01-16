@@ -55,6 +55,14 @@ export const usePrivateBalance = () => {
       const privateBalance = privacyCashBalance + shadowPayBalance;
       const totalBalance = publicBalance + privateBalance;
 
+      console.log('[usePrivateBalance] Setting balance state:', {
+        publicBalance,
+        privateBalance,
+        privacyCashBalance,
+        shadowPayBalance,
+        totalBalance,
+      });
+
       setBalance({
         publicBalance,
         privateBalance,
@@ -77,6 +85,7 @@ export const usePrivateBalance = () => {
     const interval = setInterval(fetchBalances, 10000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicKey]);
 
   return {
