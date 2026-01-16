@@ -2,6 +2,7 @@
 
 import { FC, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { Transaction, VersionedTransaction } from '@solana/web3.js';
 import { connection } from '@/lib/solana';
 import { shadowWireClient } from '@/lib/shadowwire';
 
@@ -12,7 +13,7 @@ interface DepositModalProps {
 }
 
 export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const { publicKey } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +22,11 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
   const handleDeposit = async () => {
     if (!publicKey) {
       setError('Wallet not connected');
+      return;
+    }
+
+    if (!signTransaction) {
+      setError('Wallet does not support transaction signing');
       return;
     }
 
@@ -35,21 +41,73 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
     setSuccess(null);
 
     try {
-      console.log('[DepositModal] Depositing', amountNum, 'SOL to ShadowPay pool');
+      console.log('[DepositModal] Step 1: Requesting unsigned transaction from ShadowPay API');
+      console.log('[DepositModal] Amount:', amountNum, 'SOL');
 
+      // Step 1: Get unsigned transaction from ShadowPay API
       const lamports = Math.floor(amountNum * 1e9);
       const result = await shadowWireClient.depositToPool(
         publicKey.toBase58(),
         lamports
       );
 
-      console.log('[DepositModal] Deposit result:', result);
+      console.log('[DepositModal] API Response:', result);
 
-      if (!result.success) {
-        throw new Error(result.error || 'Deposit failed');
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to get transaction from API');
       }
 
-      setSuccess(`Successfully deposited ${amountNum} SOL to ShadowPay pool!`);
+      // Step 2: Deserialize the transaction
+      // The API should return either a base64-encoded transaction or a transaction object
+      console.log('[DepositModal] Step 2: Deserializing transaction');
+
+      let transaction: Transaction | VersionedTransaction;
+
+      if (typeof result.data === 'string') {
+        // If it's a base64 string, deserialize it
+        try {
+          transaction = Transaction.from(Buffer.from(result.data, 'base64'));
+        } catch {
+          // Try versioned transaction if legacy fails
+          transaction = VersionedTransaction.deserialize(Buffer.from(result.data, 'base64'));
+        }
+      } else if (result.data.transaction) {
+        // If the response has a transaction field
+        try {
+          transaction = Transaction.from(Buffer.from(result.data.transaction, 'base64'));
+        } catch {
+          transaction = VersionedTransaction.deserialize(Buffer.from(result.data.transaction, 'base64'));
+        }
+      } else {
+        throw new Error('Invalid transaction format from API');
+      }
+
+      console.log('[DepositModal] Transaction deserialized:', transaction);
+
+      // Step 3: Sign the transaction with wallet
+      console.log('[DepositModal] Step 3: Requesting wallet signature');
+      const signedTransaction = await signTransaction(transaction);
+      console.log('[DepositModal] Transaction signed');
+
+      // Step 4: Send the signed transaction to the blockchain
+      console.log('[DepositModal] Step 4: Broadcasting transaction to Solana');
+      const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
+
+      console.log('[DepositModal] Transaction sent. Signature:', signature);
+
+      // Step 5: Wait for confirmation
+      console.log('[DepositModal] Step 5: Waiting for confirmation...');
+      const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
+      }
+
+      console.log('[DepositModal] Transaction confirmed!');
+      setSuccess(`Successfully deposited ${amountNum} SOL to ShadowPay pool! Signature: ${signature.slice(0, 8)}...`);
       setAmount('');
 
       // Wait 2 seconds then close and refresh
@@ -57,9 +115,22 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
         onSuccess();
         onClose();
       }, 2000);
+
     } catch (err: any) {
       console.error('[DepositModal] Error:', err);
-      setError(err.message || 'Failed to deposit');
+
+      // Provide more helpful error messages
+      let errorMessage = err.message || 'Failed to deposit';
+
+      if (errorMessage.includes('User rejected')) {
+        errorMessage = 'Transaction cancelled by user';
+      } else if (errorMessage.includes('Blockhash not found')) {
+        errorMessage = 'Transaction expired. Please try again.';
+      } else if (errorMessage.includes('insufficient funds')) {
+        errorMessage = 'Insufficient SOL balance for this transaction';
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
