@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { getBalance } from '@/lib/solana';
+import { getBalance, connection } from '@/lib/solana';
 import { PrivacyCashClient } from '@/lib/privacy-cash';
 import { shadowWireClient } from '@/lib/shadowwire';
 import { PrivateBalance } from '@/types';
@@ -42,7 +42,10 @@ export const usePrivateBalance = () => {
       console.log('[usePrivateBalance] Public balance:', publicBalance);
 
       // Get Privacy Cash balance
-      const privacyCash = new PrivacyCashClient(wallet as any);
+      const privacyCash = new PrivacyCashClient({
+        connection,
+        wallet: wallet as any,
+      });
       const privacyCashBalance = await privacyCash.getPrivateBalance();
 
       // Get ShadowPay pool balance
