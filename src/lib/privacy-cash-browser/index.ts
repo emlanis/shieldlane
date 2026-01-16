@@ -3,23 +3,14 @@
  * Full integration with Light Protocol SDK for browser environments
  */
 
-import { Connection, PublicKey, Transaction, TransactionSignature } from '@solana/web3.js';
+import { Connection, PublicKey, TransactionSignature } from '@solana/web3.js';
 import { WalletContextState } from '@solana/wallet-adapter-react';
-import {
-  Rpc,
-  confirmTx,
-  LightSystemProgram,
-  compress,
-  buildAndSignTx,
-  createRpc,
-  defaultTestStateTreeAccounts,
-} from '@lightprotocol/stateless.js';
 import {
   getEncryptionService,
   type DecryptedUtxo,
   type EncryptedUtxo,
 } from './encryption';
-import { getStorageAdapter, type StoredUtxo } from './storage';
+import { getStorageAdapter } from './storage';
 
 export interface PrivacyCashConfig {
   connection: Connection;
@@ -40,20 +31,13 @@ export interface WithdrawResult {
 }
 
 export class PrivacyCashBrowserClient {
-  private connection: Connection;
   private wallet: WalletContextState;
-  private rpc: Rpc;
   private encryption = getEncryptionService();
   private storage = getStorageAdapter();
   private encryptionKey: CryptoKey | null = null;
 
   constructor(config: PrivacyCashConfig) {
-    this.connection = config.connection;
     this.wallet = config.wallet;
-
-    // Initialize Light Protocol RPC
-    const rpcEndpoint = config.rpcEndpoint || this.connection.rpcEndpoint;
-    this.rpc = createRpc(rpcEndpoint, rpcEndpoint);
   }
 
   /**
@@ -80,159 +64,41 @@ export class PrivacyCashBrowserClient {
 
   /**
    * Deposit SOL into Privacy Cash pool (shield)
+   *
+   * NOTE: Light Protocol SDK v0.22.0 requires direct Signer access (secretKey),
+   * which is not available in browser wallets for security reasons.
+   * This is a placeholder implementation until browser-compatible SDK is available.
    */
-  async deposit(amount: number): Promise<DepositResult> {
-    if (!this.wallet.publicKey || !this.wallet.signTransaction) {
+  async deposit(_amount: number): Promise<DepositResult> {
+    if (!this.wallet.publicKey) {
       throw new Error('Wallet not connected');
     }
 
-    if (!this.encryptionKey) {
-      await this.initialize();
-    }
-
-    try {
-      // Generate UTXO commitment data
-      const blinding = this.encryption.generateBlinding();
-      const assetId = PublicKey.default.toBase58(); // SOL
-      const commitment = this.encryption.computeCommitment(amount, assetId, blinding);
-
-      // Convert amount to lamports
-      const lamports = Math.floor(amount * 1e9);
-
-      // Compress SOL using Light Protocol
-      const { transaction, instructions } = await compress(this.rpc, this.wallet.publicKey, lamports, this.wallet.publicKey);
-
-      // Sign and send transaction
-      const signedTx = await this.wallet.signTransaction(transaction);
-      const signature = await this.connection.sendRawTransaction(signedTx.serialize());
-
-      // Wait for confirmation
-      await confirmTx(this.connection, signature);
-
-      // Get merkle tree and leaf index from transaction logs
-      // Note: In production, parse these from transaction logs
-      const merkleTree = defaultTestStateTreeAccounts().merkleTree.toBase58();
-      const leafIndex = 0; // Should be parsed from logs
-
-      // Generate nullifier for spending later
-      const secret = this.encryption.generateBlinding();
-      const nullifier = this.encryption.computeNullifier(commitment, secret);
-
-      // Create and encrypt UTXO
-      const utxo: DecryptedUtxo = {
-        amount: lamports,
-        assetId,
-        blinding,
-        merkleTree,
-        nullifier,
-      };
-
-      const encryptedUtxo = await this.encryption.encryptUtxo(
-        utxo,
-        this.encryptionKey!,
-        'v2'
-      );
-
-      // Store encrypted UTXO
-      const storedUtxo: StoredUtxo = {
-        encrypted: encryptedUtxo,
-        merkleTree,
-        leafIndex,
-        timestamp: Date.now(),
-        spent: false,
-      };
-
-      await this.storage.addUtxo(this.wallet.publicKey.toBase58(), storedUtxo);
-
-      return {
-        signature,
-        commitment,
-        leafIndex,
-        merkleTree,
-      };
-    } catch (error) {
-      console.error('Privacy Cash deposit error:', error);
-      throw error;
-    }
+    // Light Protocol SDK v0.22.0 is not compatible with browser wallets
+    // because it requires access to the wallet's secret key for signing.
+    // Browser wallets (Phantom, Solflare, etc.) never expose secret keys.
+    throw new Error(
+      'Privacy Cash deposits are not yet available. ' +
+      'Light Protocol SDK v0.22.0 requires wallet secret key access, ' +
+      'which browser wallets do not provide for security reasons. ' +
+      'Use ShadowPay for private transfers instead.'
+    );
   }
 
   /**
    * Withdraw SOL from Privacy Cash pool (unshield)
    */
-  async withdraw(amount: number, recipient?: PublicKey): Promise<WithdrawResult> {
-    if (!this.wallet.publicKey || !this.wallet.signTransaction) {
+  async withdraw(_amount: number, _recipient?: PublicKey): Promise<WithdrawResult> {
+    if (!this.wallet.publicKey) {
       throw new Error('Wallet not connected');
     }
 
-    if (!this.encryptionKey) {
-      await this.initialize();
-    }
-
-    const recipientKey = recipient || this.wallet.publicKey;
-
-    try {
-      // Get unspent UTXOs
-      const storedUtxos = await this.storage.getUnspentUtxos(
-        this.wallet.publicKey.toBase58()
-      );
-
-      if (storedUtxos.length === 0) {
-        throw new Error('No unspent UTXOs available');
-      }
-
-      // Decrypt UTXOs and find ones to spend
-      const lamports = Math.floor(amount * 1e9);
-      let totalAmount = 0;
-      const utxosToSpend: { utxo: DecryptedUtxo; stored: StoredUtxo }[] = [];
-
-      for (const stored of storedUtxos) {
-        const decrypted = await this.encryption.decryptUtxo(
-          stored.encrypted,
-          this.encryptionKey!
-        );
-
-        utxosToSpend.push({ utxo: decrypted, stored });
-        totalAmount += decrypted.amount;
-
-        if (totalAmount >= lamports) {
-          break;
-        }
-      }
-
-      if (totalAmount < lamports) {
-        throw new Error(`Insufficient private balance. Need ${amount} SOL, have ${totalAmount / 1e9} SOL`);
-      }
-
-      // In production, this would:
-      // 1. Generate ZK proof of UTXO ownership
-      // 2. Create decompress instruction
-      // 3. Handle change UTXO if needed
-
-      // For now, create a placeholder decompress transaction
-      const transaction = new Transaction();
-      // Add decompress instructions here using Light Protocol SDK
-
-      const signedTx = await this.wallet.signTransaction(transaction);
-      const signature = await this.connection.sendRawTransaction(signedTx.serialize());
-      await confirmTx(this.connection, signature);
-
-      // Mark UTXOs as spent
-      for (const { stored } of utxosToSpend) {
-        await this.storage.markUtxoSpent(
-          this.wallet.publicKey.toBase58(),
-          stored.merkleTree,
-          stored.leafIndex
-        );
-      }
-
-      return {
-        signature,
-        amount,
-      };
-    } catch (error) {
-      console.error('Privacy Cash withdraw error:', error);
-      throw error;
-    }
+    throw new Error(
+      'Privacy Cash withdrawals are not yet available. ' +
+      'Light Protocol SDK v0.22.0 requires wallet secret key access, ' +
+      'which browser wallets do not provide for security reasons. ' +
+      'Use ShadowPay for private transfers instead.'
+    );
   }
 
   /**
