@@ -58,31 +58,53 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
       }
 
       // Step 2: Deserialize the transaction
-      // The API should return either a base64-encoded transaction or a transaction object
-      console.log('[DepositModal] Step 2: Deserializing transaction');
+      console.log('[DepositModal] Step 2: Looking for transaction in response');
+      console.log('[DepositModal] Response data structure:', Object.keys(result.data));
 
-      let transaction: Transaction | VersionedTransaction;
+      let transactionData: string | null = null;
 
+      // Try to find the transaction data in various possible formats
       if (typeof result.data === 'string') {
-        // If it's a base64 string, deserialize it
-        try {
-          transaction = Transaction.from(Buffer.from(result.data, 'base64'));
-        } catch {
-          // Try versioned transaction if legacy fails
-          transaction = VersionedTransaction.deserialize(Buffer.from(result.data, 'base64'));
-        }
+        // Entire response is a base64 string
+        transactionData = result.data;
       } else if (result.data.transaction) {
-        // If the response has a transaction field
-        try {
-          transaction = Transaction.from(Buffer.from(result.data.transaction, 'base64'));
-        } catch {
-          transaction = VersionedTransaction.deserialize(Buffer.from(result.data.transaction, 'base64'));
-        }
+        // Response has a 'transaction' field
+        transactionData = result.data.transaction;
+      } else if (result.data.serialized_transaction) {
+        // Response has a 'serialized_transaction' field
+        transactionData = result.data.serialized_transaction;
       } else {
-        throw new Error('Invalid transaction format from API');
+        // API doesn't return an unsigned transaction - show detailed error
+        console.error('[DepositModal] API response does not contain transaction data');
+        console.error('[DepositModal] Available fields:', Object.keys(result.data));
+        console.error('[DepositModal] Full response:', result.data);
+        throw new Error(
+          `ShadowPay API returned success but no transaction to sign. ` +
+          `Response contains: ${Object.keys(result.data).join(', ')}. ` +
+          `This API may not support client-side transaction signing yet.`
+        );
       }
 
-      console.log('[DepositModal] Transaction deserialized:', transaction);
+      console.log('[DepositModal] Found transaction data, deserializing...');
+
+      let transaction: Transaction | VersionedTransaction;
+      try {
+        // Try legacy Transaction first
+        transaction = Transaction.from(Buffer.from(transactionData, 'base64'));
+        console.log('[DepositModal] Deserialized as legacy Transaction');
+      } catch (legacyError) {
+        try {
+          // Try VersionedTransaction if legacy fails
+          transaction = VersionedTransaction.deserialize(Buffer.from(transactionData, 'base64'));
+          console.log('[DepositModal] Deserialized as VersionedTransaction');
+        } catch (versionedError) {
+          console.error('[DepositModal] Failed to deserialize as legacy:', legacyError);
+          console.error('[DepositModal] Failed to deserialize as versioned:', versionedError);
+          throw new Error('Failed to deserialize transaction from API response');
+        }
+      }
+
+      console.log('[DepositModal] Transaction deserialized successfully');
 
       // Step 3: Sign the transaction with wallet
       console.log('[DepositModal] Step 3: Requesting wallet signature');
@@ -100,7 +122,12 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
 
       // Step 5: Wait for confirmation
       console.log('[DepositModal] Step 5: Waiting for confirmation...');
-      const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+      const latestBlockhash = await connection.getLatestBlockhash('confirmed');
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      }, 'confirmed');
 
       if (confirmation.value.err) {
         throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);

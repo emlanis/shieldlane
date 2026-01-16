@@ -114,6 +114,8 @@ export interface DepositResponse {
   transaction_id: string;
   amount: number;
   status: string;
+  transaction?: string; // Base64 encoded unsigned transaction
+  serialized_transaction?: string; // Alternative field name
 }
 
 export interface BalanceResponse {
