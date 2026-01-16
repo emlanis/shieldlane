@@ -3,10 +3,12 @@
 import { FC, useState } from 'react';
 import { usePrivateBalance } from '@/hooks/usePrivateBalance';
 import { formatCurrency } from '@/lib/utils';
+import { DepositModal } from './DepositModal';
 
 export const PrivateBalance: FC = () => {
   const { balance, loading, refresh } = usePrivateBalance();
   const [showActualBalance, setShowActualBalance] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -137,14 +139,29 @@ export const PrivateBalance: FC = () => {
         </div>
       </div>
 
-      {/* Action Button */}
-      <button
-        onClick={refresh}
-        disabled={loading}
-        className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
-      >
-        {loading ? 'Refreshing...' : 'Refresh Balances'}
-      </button>
+      {/* Action Buttons */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <button
+          onClick={() => setShowDepositModal(true)}
+          className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all"
+        >
+          💰 Deposit to ShadowPay
+        </button>
+        <button
+          onClick={refresh}
+          disabled={loading}
+          className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
+        >
+          {loading ? 'Refreshing...' : '🔄 Refresh Balances'}
+        </button>
+      </div>
+
+      {/* Deposit Modal */}
+      <DepositModal
+        isOpen={showDepositModal}
+        onClose={() => setShowDepositModal(false)}
+        onSuccess={refresh}
+      />
     </div>
   );
 };
