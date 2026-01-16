@@ -1,11 +1,13 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { usePrivacyScore } from '@/hooks/usePrivacyScore';
 import { getPrivacyLevel } from '@/lib/utils';
 
 export const PrivacyScore: FC = () => {
   const { score, loading } = usePrivacyScore();
+  const [showAllExposed, setShowAllExposed] = useState(false);
+  const [showAllProtected, setShowAllProtected] = useState(false);
 
   if (loading || !score) {
     return (
@@ -63,15 +65,18 @@ export const PrivacyScore: FC = () => {
             Exposed ({score.exposedDataPoints.length})
           </h4>
           <div className="space-y-1">
-            {score.exposedDataPoints.slice(0, 3).map((point, i) => (
+            {(showAllExposed ? score.exposedDataPoints : score.exposedDataPoints.slice(0, 3)).map((point, i) => (
               <div key={i} className="text-xs text-zinc-400 pl-6">
                 • {point}
               </div>
             ))}
             {score.exposedDataPoints.length > 3 && (
-              <div className="text-xs text-zinc-500 pl-6">
-                +{score.exposedDataPoints.length - 3} more
-              </div>
+              <button
+                onClick={() => setShowAllExposed(!showAllExposed)}
+                className="text-xs text-purple-400 hover:text-purple-300 pl-6 transition-colors"
+              >
+                {showAllExposed ? '− Show less' : `+${score.exposedDataPoints.length - 3} more`}
+              </button>
             )}
           </div>
         </div>
@@ -83,15 +88,18 @@ export const PrivacyScore: FC = () => {
             Protected ({score.protectedDataPoints.length})
           </h4>
           <div className="space-y-1">
-            {score.protectedDataPoints.slice(0, 3).map((point, i) => (
+            {(showAllProtected ? score.protectedDataPoints : score.protectedDataPoints.slice(0, 3)).map((point, i) => (
               <div key={i} className="text-xs text-zinc-400 pl-6">
                 • {point}
               </div>
             ))}
             {score.protectedDataPoints.length > 3 && (
-              <div className="text-xs text-zinc-500 pl-6">
-                +{score.protectedDataPoints.length - 3} more
-              </div>
+              <button
+                onClick={() => setShowAllProtected(!showAllProtected)}
+                className="text-xs text-purple-400 hover:text-purple-300 pl-6 transition-colors"
+              >
+                {showAllProtected ? '− Show less' : `+${score.protectedDataPoints.length - 3} more`}
+              </button>
             )}
           </div>
         </div>
