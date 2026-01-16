@@ -32,9 +32,11 @@ export class UnifiedPrivacyService {
   private privacyCash: PrivacyCashBrowserClient;
   private shadowWire: ShadowWireClient;
   private wallet: WalletContextState;
+  private connection: Connection;
 
   constructor(config: UnifiedPrivacyConfig) {
     this.wallet = config.wallet;
+    this.connection = config.connection;
 
     // Initialize Privacy Cash
     this.privacyCash = new PrivacyCashBrowserClient({
@@ -71,17 +73,22 @@ export class UnifiedPrivacyService {
    * Get combined privacy balance from both services
    */
   async getPrivacyBalance(): Promise<PrivacyBalance> {
-    const [privacyCashBalance, shadowPayBalance] = await Promise.all([
+    if (!this.wallet.publicKey) {
+      return { privacyCash: 0, shadowPay: 0, total: 0 };
+    }
+
+    const [privacyCashBalance, shadowPoolBalance, shadowEscrowBalance] = await Promise.all([
       this.privacyCash.getPrivateBalance().catch(() => 0),
-      this.shadowWire.getBalance(this.wallet.publicKey!.toBase58()).then(
-        (res) => (res.success && res.data ? res.data.balance : 0)
-      ).catch(() => 0),
+      this.shadowWire.getPoolBalance(this.wallet.publicKey.toBase58()).catch(() => 0),
+      this.shadowWire.getEscrowBalance(this.wallet.publicKey.toBase58()).catch(() => 0),
     ]);
+
+    const shadowPayBalance = shadowPoolBalance + shadowEscrowBalance;
 
     return {
       privacyCash: privacyCashBalance,
-      shadowPay: shadowPayBalance,
-      total: privacyCashBalance + shadowPayBalance,
+      shadowPay: shadowPayBalance / 1e9, // Convert lamports to SOL
+      total: privacyCashBalance + (shadowPayBalance / 1e9),
     };
   }
 
@@ -99,9 +106,10 @@ export class UnifiedPrivacyService {
     if (method === 'privacy-cash') {
       return await this.privacyCash.deposit(amount);
     } else {
-      const result = await this.shadowWire.deposit(
+      const lamports = Math.floor(amount * 1e9);
+      const result = await this.shadowWire.depositToPool(
         this.wallet.publicKey.toBase58(),
-        amount
+        lamports
       );
 
       if (!result.success || !result.data) {
@@ -109,7 +117,7 @@ export class UnifiedPrivacyService {
       }
 
       return {
-        signature: result.data.transaction_signature,
+        signature: result.data.transaction_id || 'shadow-pay-deposit',
         method: 'shadow-pay',
         amount,
       };
@@ -133,10 +141,10 @@ export class UnifiedPrivacyService {
     if (method === 'privacy-cash') {
       return await this.privacyCash.withdraw(amount, recipientKey);
     } else {
-      const result = await this.shadowWire.withdraw(
+      const lamports = Math.floor(amount * 1e9);
+      const result = await this.shadowWire.withdrawFromPool(
         this.wallet.publicKey.toBase58(),
-        amount,
-        recipientKey.toBase58()
+        lamports
       );
 
       if (!result.success || !result.data) {
@@ -144,7 +152,7 @@ export class UnifiedPrivacyService {
       }
 
       return {
-        signature: result.data.transaction_signature,
+        signature: result.data.transaction_id || 'shadow-pay-withdraw',
         method: 'shadow-pay',
         amount,
       };
@@ -157,17 +165,18 @@ export class UnifiedPrivacyService {
   async sendStealthTransfer(
     recipient: string,
     amount: number,
-    mode: PrivacyMode = 'stealth'
+    mode: PrivacyMode = 'external'
   ): Promise<TransferResult> {
     if (!this.wallet.publicKey) {
       throw new Error('Wallet not connected');
     }
 
-    const result = await this.shadowWire.sendPayment(
+    const lamports = Math.floor(amount * 1e9);
+    const result = await this.shadowWire.executeStealthTransfer(
+      mode,
       this.wallet.publicKey.toBase58(),
       recipient,
-      amount,
-      mode
+      lamports
     );
 
     if (!result.success || !result.data) {
@@ -175,7 +184,7 @@ export class UnifiedPrivacyService {
     }
 
     return {
-      signature: result.data.transaction_signature,
+      signature: result.data.transaction_id || 'shadow-pay-transfer',
       method: 'shadow-pay',
       amount,
     };
@@ -189,13 +198,11 @@ export class UnifiedPrivacyService {
       return [];
     }
 
-    const shadowPayHistory = await this.shadowWire.getTransactionHistory(
+    const shadowPayHistory = await this.shadowWire.getTransferHistory(
       this.wallet.publicKey.toBase58()
     );
 
-    return shadowPayHistory.success && shadowPayHistory.data
-      ? shadowPayHistory.data.transactions
-      : [];
+    return shadowPayHistory || [];
   }
 
   /**
@@ -203,7 +210,9 @@ export class UnifiedPrivacyService {
    */
   async getPrivacyStats() {
     const balance = await this.getPrivacyBalance();
-    const publicBalance = await this.wallet.connection?.getBalance(this.wallet.publicKey!) || 0;
+    const publicBalance = this.wallet.publicKey
+      ? await this.connection.getBalance(this.wallet.publicKey)
+      : 0;
     const publicBalanceSOL = publicBalance / 1e9;
 
     const privacyPercentage = balance.total > 0
