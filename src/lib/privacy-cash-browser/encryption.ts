@@ -81,7 +81,7 @@ export class BrowserEncryptionService {
           tagLength: 128,
         },
         key,
-        data
+        data as BufferSource
       );
       ciphertext = encrypted;
       // GCM includes auth tag in the ciphertext
@@ -94,7 +94,7 @@ export class BrowserEncryptionService {
           length: 64,
         },
         key,
-        data
+        data as BufferSource
       );
       ciphertext = encrypted;
     }
@@ -124,22 +124,22 @@ export class BrowserEncryptionService {
       decrypted = await this.crypto.decrypt(
         {
           name: 'AES-GCM',
-          iv,
+          iv: iv as BufferSource,
           tagLength: 128,
         },
         key,
-        ciphertext
+        ciphertext as BufferSource
       );
     } else {
       // AES-128-CTR
       decrypted = await this.crypto.decrypt(
         {
           name: 'AES-CTR',
-          counter: iv,
+          counter: iv as BufferSource,
           length: 64,
         },
         key,
-        ciphertext
+        ciphertext as BufferSource
       );
     }
 
