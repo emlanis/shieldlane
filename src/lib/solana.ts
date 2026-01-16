@@ -6,6 +6,12 @@ export const getConnection = (): Connection => {
   const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
   const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet';
 
+  console.log('[getConnection] Environment check:', {
+    hasRpcUrl: !!rpcUrl,
+    rpcUrlLength: rpcUrl?.length || 0,
+    network,
+  });
+
   let endpoint: string;
 
   if (rpcUrl && rpcUrl !== '') {

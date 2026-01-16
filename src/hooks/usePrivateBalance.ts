@@ -31,12 +31,15 @@ export const usePrivateBalance = () => {
       return;
     }
 
+    console.log('[usePrivateBalance] Starting balance fetch for:', publicKey.toBase58());
     setLoading(true);
     setError(null);
 
     try {
       // Get public balance
+      console.log('[usePrivateBalance] Fetching public balance...');
       const publicBalance = await getBalance(publicKey);
+      console.log('[usePrivateBalance] Public balance:', publicBalance);
 
       // Get Privacy Cash balance
       const privacyCash = new PrivacyCashClient(wallet as any);
