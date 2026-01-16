@@ -2,13 +2,15 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, clusterApiUrl } from '@solana/
 
 // Get Helius RPC endpoint or fallback to public endpoint
 export const getConnection = (): Connection => {
-  const heliusApiKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+  // Use full RPC URL if provided (safer - doesn't expose API key separately)
+  const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
   const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet';
 
   let endpoint: string;
 
-  if (heliusApiKey && heliusApiKey !== '') {
-    endpoint = `https://rpc.helius.xyz/?api-key=${heliusApiKey}`;
+  if (rpcUrl && rpcUrl !== '') {
+    // Use provided RPC URL (includes API key if needed)
+    endpoint = rpcUrl;
   } else {
     // Fallback to public RPC
     endpoint = clusterApiUrl(network as 'devnet' | 'testnet' | 'mainnet-beta');

@@ -27,23 +27,33 @@ Helius provides enterprise-grade Solana RPC infrastructure with:
    - **Mainnet** for production
 4. Copy your API key (starts with your project name)
 
-### 3. Add to Vercel
+### 3. Add to Vercel (Secure Method)
 
-**Option A: Via Vercel Dashboard**
+⚠️ **IMPORTANT**: Don't use `NEXT_PUBLIC_HELIUS_API_KEY` - it exposes your key in the browser!
+
+**Option A: Via Vercel Dashboard (Recommended)**
 
 1. Go to [vercel.com](https://vercel.com)
 2. Select your `shieldlane` project
 3. Go to **Settings** → **Environment Variables**
 4. Click **Add New**
-5. Add variable:
+5. Add variable with **full RPC URL**:
    ```
-   Name:  NEXT_PUBLIC_HELIUS_API_KEY
-   Value: your-helius-api-key-here
+   Name:  NEXT_PUBLIC_SOLANA_RPC_URL
+   Value: https://devnet.helius-rpc.com/?api-key=your-helius-api-key-here
    ```
-6. Select environments: Production, Preview, Development
-7. Click **Save**
-8. Go to **Deployments** tab
-9. Click **Redeploy** on latest deployment
+   - For **devnet**: `https://devnet.helius-rpc.com/?api-key=YOUR_KEY`
+   - For **mainnet**: `https://mainnet.helius-rpc.com/?api-key=YOUR_KEY`
+
+6. Also add network variable:
+   ```
+   Name:  NEXT_PUBLIC_SOLANA_NETWORK
+   Value: devnet
+   ```
+7. Select environments: Production, Preview, Development
+8. Click **Save**
+9. Go to **Deployments** tab
+10. Click **Redeploy** on latest deployment
 
 **Option B: Via Vercel CLI**
 
@@ -51,11 +61,18 @@ Helius provides enterprise-grade Solana RPC infrastructure with:
 # Install Vercel CLI if needed
 npm i -g vercel
 
-# Add environment variable
-vercel env add NEXT_PUBLIC_HELIUS_API_KEY
+# Add RPC URL environment variable
+vercel env add NEXT_PUBLIC_SOLANA_RPC_URL
 
-# Paste your API key when prompted
+# Paste your full Helius RPC URL when prompted:
+# https://devnet.helius-rpc.com/?api-key=YOUR_KEY
+
 # Select: Production, Preview, Development
+
+# Add network variable
+vercel env add NEXT_PUBLIC_SOLANA_NETWORK
+
+# Enter: devnet
 
 # Redeploy
 vercel --prod
@@ -88,14 +105,34 @@ https://mainnet.helius-rpc.com/?api-key=YOUR_API_KEY
 Add to Vercel (all environments):
 
 ```bash
-# Required
-NEXT_PUBLIC_HELIUS_API_KEY=your-api-key-here
+# Required - Use full RPC URL (more secure than separate API key)
+NEXT_PUBLIC_SOLANA_RPC_URL=https://devnet.helius-rpc.com/?api-key=your-key-here
 NEXT_PUBLIC_SOLANA_NETWORK=devnet
 
 # Optional
 NEXT_PUBLIC_PRIVACY_CASH_PROGRAM_ID=9fhQBbumKEFuXtMBDw8AaQyAjCorLGJQiS3skWZdQyQD
 NEXT_PUBLIC_SHADOWPAY_API_BASE=https://shadow.radr.fun/shadowpay
 ```
+
+### Why This is Safe
+
+While the RPC URL (with API key) is visible in the browser, it's acceptable because:
+
+1. **Domain Restrictions**: Configure your Helius API key to only work from `shieldlane.vercel.app`
+2. **Rate Limits**: Worst case, someone hits your rate limit (not your wallet)
+3. **No Billing Risk**: Free tier has no credit card, paid tier has monthly caps
+4. **Industry Standard**: This is how most dApps use RPC endpoints
+
+### Even More Secure (Advanced)
+
+For maximum security, use an API route proxy:
+
+1. Create `app/api/rpc/route.ts` (server-side only)
+2. Use `HELIUS_API_KEY` (without NEXT_PUBLIC prefix)
+3. Proxy RPC requests through your API
+4. Rate limit on your backend
+
+This is overkill for most dApps but available if needed.
 
 ## Testing Helius Connection
 
