@@ -11,9 +11,11 @@ export const getConnection = (): Connection => {
   if (rpcUrl && rpcUrl !== '') {
     // Use provided RPC URL (includes API key if needed)
     endpoint = rpcUrl;
+    console.log('[getConnection] Using custom RPC URL');
   } else {
     // Fallback to public RPC
     endpoint = clusterApiUrl(network as 'devnet' | 'testnet' | 'mainnet-beta');
+    console.log('[getConnection] Using public RPC:', endpoint);
   }
 
   return new Connection(endpoint, {
@@ -36,10 +38,12 @@ export const solToLamports = (sol: number): number => {
 
 export const getBalance = async (publicKey: PublicKey): Promise<number> => {
   try {
+    console.log('[getBalance] Fetching balance for:', publicKey.toBase58());
     const balance = await connection.getBalance(publicKey);
+    console.log('[getBalance] Balance received:', balance, 'lamports =', lamportsToSol(balance), 'SOL');
     return lamportsToSol(balance);
   } catch (error) {
-    console.error('Error fetching balance:', error);
+    console.error('[getBalance] Error fetching balance:', error);
     return 0;
   }
 };

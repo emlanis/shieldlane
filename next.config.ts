@@ -3,6 +3,29 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   // Disable Turbopack to avoid workspace detection issues
+
+  // Add CSP headers to allow wallet extensions (Phantom, Solflare, etc.)
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.helius-rpc.com https://*.solana.com https://*.radr.fun wss://*.solana.com",
+              "frame-src 'self'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
