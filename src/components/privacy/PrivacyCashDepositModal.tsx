@@ -91,7 +91,30 @@ export const PrivacyCashDepositModal: FC<PrivacyCashDepositModalProps> = ({
         throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
       }
 
-      console.log('[PrivacyCashDeposit] Transaction confirmed!');
+      console.log('[PrivacyCashDeposit] Transaction confirmed on blockchain!');
+
+      // Step 7: Update backend with transaction signature
+      console.log('[PrivacyCashDeposit] Step 7: Updating backend with signature...');
+      const confirmResponse = await fetch('/api/privacy-cash/confirm-deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          walletAddress: publicKey.toBase58(),
+          signature,
+          amount: lamports,
+        }),
+      });
+
+      const confirmResult = await confirmResponse.json();
+
+      if (!confirmResult.success) {
+        console.error('[PrivacyCashDeposit] Failed to confirm with backend:', confirmResult.error);
+        // Don't fail the whole operation - the blockchain tx succeeded
+        // Just log the warning
+      } else {
+        console.log('[PrivacyCashDeposit] Backend updated successfully');
+      }
+
       setSuccess(
         `Successfully deposited ${amountNum} SOL to Privacy Cash! Transaction: ${signature}`
       );
