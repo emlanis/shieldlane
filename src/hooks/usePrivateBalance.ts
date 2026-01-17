@@ -42,11 +42,28 @@ export const usePrivateBalance = () => {
       console.log('[usePrivateBalance] Public balance:', publicBalance);
 
       // Get Privacy Cash balance
-      const privacyCash = new PrivacyCashClient({
-        connection,
-        wallet: wallet as any,
-      });
-      const privacyCashBalance = await privacyCash.getPrivateBalance();
+      console.log('[usePrivateBalance] Fetching Privacy Cash balance...');
+      let privacyCashBalance = 0;
+
+      if (wallet && publicKey) {
+        try {
+          const response = await fetch(
+            `/api/privacy-cash/balance?walletAddress=${publicKey.toBase58()}`
+          );
+          const result = await response.json();
+
+          if (result.success && result.balance !== undefined) {
+            privacyCashBalance = result.balance / 1e9; // Convert lamports to SOL
+            console.log('[usePrivateBalance] Privacy Cash balance:', privacyCashBalance, 'SOL');
+          } else {
+            console.warn('[usePrivateBalance] Privacy Cash API returned:', result);
+          }
+        } catch (error) {
+          console.error('[usePrivateBalance] Failed to fetch Privacy Cash balance:', error);
+        }
+      } else {
+        console.log('[usePrivateBalance] Wallet not fully connected, skipping Privacy Cash balance');
+      }
 
       // Get ShadowPay pool balance
       const shadowPayBalance = await shadowWireClient.getPoolBalance(publicKey.toBase58());
