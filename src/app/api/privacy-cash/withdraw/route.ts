@@ -10,7 +10,6 @@ import {
 } from '@solana/web3.js';
 import { getServerSupabase } from '@/lib/supabase';
 import * as crypto from 'crypto';
-import * as bs58 from 'bs58';
 
 /**
  * POST /api/privacy-cash/withdraw
@@ -105,7 +104,7 @@ export async function POST(request: NextRequest) {
     decrypted += decipher.final('utf8');
 
     const keypairData = JSON.parse(decrypted);
-    const secretKey = bs58.decode(keypairData.secretKey);
+    const secretKey = Buffer.from(keypairData.secretKey, 'base64');
     const keypair = Keypair.fromSecretKey(secretKey);
 
     console.log('[Privacy Cash Withdraw] Decrypted keypair:', keypair.publicKey.toBase58());
@@ -144,11 +143,9 @@ export async function POST(request: NextRequest) {
     const recipientPubkey = new PublicKey(recipientAddress);
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
 
-    const transaction = new Transaction({
-      feePayer: keypair.publicKey,
-      recentBlockhash: blockhash,
-      lastValidBlockHeight,
-    });
+    const transaction = new Transaction();
+    transaction.feePayer = keypair.publicKey;
+    transaction.recentBlockhash = blockhash;
 
     transaction.add(
       SystemProgram.transfer({

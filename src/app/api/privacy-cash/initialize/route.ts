@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Keypair } from '@solana/web3.js';
 import { getServerSupabase } from '@/lib/supabase';
 import * as crypto from 'crypto';
-import * as bs58 from 'bs58';
 
 /**
  * POST /api/privacy-cash/initialize
@@ -86,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     const keypairData = JSON.stringify({
       publicKey: keypair.publicKey.toBase58(),
-      secretKey: bs58.encode(keypair.secretKey),
+      secretKey: Buffer.from(keypair.secretKey).toString('base64'),
     });
 
     let encrypted = cipher.update(keypairData, 'utf8', 'base64');

@@ -8,7 +8,6 @@ import {
 } from '@solana/web3.js';
 import { getServerSupabase } from '@/lib/supabase';
 import * as crypto from 'crypto';
-import * as bs58 from 'bs58';
 
 /**
  * POST /api/privacy-cash/deposit
@@ -100,7 +99,7 @@ export async function POST(request: NextRequest) {
 
       const keypairData = JSON.stringify({
         publicKey: keypair.publicKey.toBase58(),
-        secretKey: bs58.encode(keypair.secretKey),
+        secretKey: Buffer.from(keypair.secretKey).toString('base64'),
       });
 
       let encrypted = cipher.update(keypairData, 'utf8', 'base64');
@@ -152,11 +151,9 @@ export async function POST(request: NextRequest) {
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
 
     // Create transaction
-    const transaction = new Transaction({
-      feePayer: fromPubkey,
-      recentBlockhash: blockhash,
-      lastValidBlockHeight,
-    });
+    const transaction = new Transaction();
+    transaction.feePayer = fromPubkey;
+    transaction.recentBlockhash = blockhash;
 
     // Add transfer instruction
     transaction.add(
