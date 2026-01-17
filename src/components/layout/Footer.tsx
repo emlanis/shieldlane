@@ -56,7 +56,7 @@ export const Footer: FC = () => {
               </li>
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/emlanis/shieldlane"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
@@ -66,7 +66,7 @@ export const Footer: FC = () => {
               </li>
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/emlanis/shieldlane"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
@@ -80,18 +80,39 @@ export const Footer: FC = () => {
           {/* Technology */}
           <div>
             <h3 className="text-sm font-semibold text-zinc-300 mb-3">Built With</h3>
-            <ul className="space-y-2 text-sm text-zinc-400">
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
-                Privacy Cash SDK
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a
+                  href="https://github.com/Lightprotocol/light-protocol"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-zinc-400 hover:text-purple-400 transition-colors"
+                >
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                  Privacy Cash SDK
+                </a>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                ShadowWire/ShadowPay
+              <li>
+                <a
+                  href="https://github.com/elusiv-privacy/elusiv"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-zinc-400 hover:text-blue-400 transition-colors"
+                >
+                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  ShadowWire/ShadowPay
+                </a>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                Helius RPC
+              <li>
+                <a
+                  href="https://www.helius.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-zinc-400 hover:text-green-400 transition-colors"
+                >
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  Helius RPC
+                </a>
               </li>
             </ul>
           </div>

@@ -1,12 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useWallet } from '@solana/wallet-adapter-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { ConnectWalletButton } from '@/components/wallet/ConnectWalletButton';
 
 export default function Home() {
-  const { connected } = useWallet();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -47,12 +46,13 @@ export default function Home() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                <Link
-                  href={connected ? "/dashboard" : "#"}
+                <ConnectWalletButton
+                  connectedText="Go to Dashboard"
+                  connectedHref="/dashboard"
                   className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium transition-all transform hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25"
                 >
-                  {connected ? "Go to Dashboard" : "Connect Wallet to Start"}
-                </Link>
+                  Connect Wallet to Start
+                </ConnectWalletButton>
                 <Link
                   href="/learn"
                   className="w-full sm:w-auto px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg font-medium transition-all"
@@ -181,12 +181,13 @@ export default function Home() {
               <p className="text-xl text-zinc-400">
                 Connect your wallet and start protecting your transaction history today.
               </p>
-              <Link
-                href={connected ? "/dashboard" : "#"}
+              <ConnectWalletButton
+                connectedText="Open Dashboard"
+                connectedHref="/dashboard"
                 className="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium text-lg transition-all transform hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25"
               >
-                {connected ? "Open Dashboard" : "Connect Wallet"}
-              </Link>
+                Connect Wallet
+              </ConnectWalletButton>
             </div>
           </div>
         </section>
