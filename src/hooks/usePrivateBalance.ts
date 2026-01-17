@@ -97,11 +97,6 @@ export const usePrivateBalance = () => {
 
   useEffect(() => {
     fetchBalances();
-
-    // Poll for balance updates every 10 seconds
-    const interval = setInterval(fetchBalances, 10000);
-
-    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicKey]);
 
