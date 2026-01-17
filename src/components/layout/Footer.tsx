@@ -83,7 +83,7 @@ export const Footer: FC = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="https://github.com/Lightprotocol/light-protocol"
+                  href="https://github.com/Privacy-Cash/privacy-cash"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-zinc-400 hover:text-purple-400 transition-colors"
@@ -94,7 +94,7 @@ export const Footer: FC = () => {
               </li>
               <li>
                 <a
-                  href="https://github.com/elusiv-privacy/elusiv"
+                  href="https://github.com/Radrdotfun/ShadowWire"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-zinc-400 hover:text-blue-400 transition-colors"
