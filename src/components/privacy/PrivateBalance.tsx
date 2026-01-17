@@ -1,14 +1,32 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect, useRef } from 'react';
 import { usePrivateBalance } from '@/hooks/usePrivateBalance';
 import { formatCurrency } from '@/lib/utils';
 import { DepositModal } from './DepositModal';
+import { PrivacyCashDepositModal } from './PrivacyCashDepositModal';
 
 export const PrivateBalance: FC = () => {
   const { balance, loading, refresh } = usePrivateBalance();
   const [showActualBalance, setShowActualBalance] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showPrivacyCashModal, setShowPrivacyCashModal] = useState(false);
+  const [showDepositDropdown, setShowDepositDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDepositDropdown(false);
+      }
+    };
+
+    if (showDepositDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showDepositDropdown]);
 
   return (
     <div className="space-y-6">
@@ -141,12 +159,61 @@ export const PrivateBalance: FC = () => {
 
       {/* Action Buttons */}
       <div className="grid md:grid-cols-2 gap-4">
-        <button
-          onClick={() => setShowDepositModal(true)}
-          className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all"
-        >
-          💰 Deposit to ShadowPay
-        </button>
+        {/* Deposit Dropdown Button */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setShowDepositDropdown(!showDepositDropdown)}
+            className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+          >
+            <span>💰 Deposit</span>
+            <svg
+              className={`w-4 h-4 transition-transform ${showDepositDropdown ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Dropdown Menu */}
+          {showDepositDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-10">
+              <button
+                onClick={() => {
+                  setShowPrivacyCashModal(true);
+                  setShowDepositDropdown(false);
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors border-b border-zinc-700"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🔐</span>
+                  <div>
+                    <div className="font-medium">Privacy Cash</div>
+                    <div className="text-xs text-zinc-400">Server-side encryption (Recommended)</div>
+                  </div>
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setShowDepositModal(true);
+                  setShowDepositDropdown(false);
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🌑</span>
+                  <div>
+                    <div className="font-medium">ShadowPay</div>
+                    <div className="text-xs text-zinc-400">Mainnet only (Devnet unavailable)</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Refresh Button */}
         <button
           onClick={refresh}
           disabled={loading}
@@ -156,10 +223,15 @@ export const PrivateBalance: FC = () => {
         </button>
       </div>
 
-      {/* Deposit Modal */}
+      {/* Modals */}
       <DepositModal
         isOpen={showDepositModal}
         onClose={() => setShowDepositModal(false)}
+        onSuccess={refresh}
+      />
+      <PrivacyCashDepositModal
+        isOpen={showPrivacyCashModal}
+        onClose={() => setShowPrivacyCashModal(false)}
         onSuccess={refresh}
       />
     </div>
