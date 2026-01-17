@@ -5,28 +5,35 @@ import { usePrivateBalance } from '@/hooks/usePrivateBalance';
 import { formatCurrency } from '@/lib/utils';
 import { DepositModal } from './DepositModal';
 import { PrivacyCashDepositModal } from './PrivacyCashDepositModal';
+import { PrivacyCashWithdrawModal } from './PrivacyCashWithdrawModal';
 
 export const PrivateBalance: FC = () => {
   const { balance, loading, refresh } = usePrivateBalance();
   const [showActualBalance, setShowActualBalance] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showPrivacyCashModal, setShowPrivacyCashModal] = useState(false);
+  const [showPrivacyCashWithdrawModal, setShowPrivacyCashWithdrawModal] = useState(false);
   const [showDepositDropdown, setShowDepositDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showWithdrawDropdown, setShowWithdrawDropdown] = useState(false);
+  const depositDropdownRef = useRef<HTMLDivElement>(null);
+  const withdrawDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (depositDropdownRef.current && !depositDropdownRef.current.contains(event.target as Node)) {
         setShowDepositDropdown(false);
+      }
+      if (withdrawDropdownRef.current && !withdrawDropdownRef.current.contains(event.target as Node)) {
+        setShowWithdrawDropdown(false);
       }
     };
 
-    if (showDepositDropdown) {
+    if (showDepositDropdown || showWithdrawDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showDepositDropdown]);
+  }, [showDepositDropdown, showWithdrawDropdown]);
 
   return (
     <div className="space-y-6">
@@ -158,9 +165,9 @@ export const PrivateBalance: FC = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         {/* Deposit Dropdown Button */}
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative" ref={depositDropdownRef}>
           <button
             onClick={() => setShowDepositDropdown(!showDepositDropdown)}
             className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
@@ -176,7 +183,7 @@ export const PrivateBalance: FC = () => {
             </svg>
           </button>
 
-          {/* Dropdown Menu */}
+          {/* Deposit Dropdown Menu */}
           {showDepositDropdown && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-10">
               <button
@@ -213,6 +220,57 @@ export const PrivateBalance: FC = () => {
           )}
         </div>
 
+        {/* Withdraw Dropdown Button */}
+        <div className="relative" ref={withdrawDropdownRef}>
+          <button
+            onClick={() => setShowWithdrawDropdown(!showWithdrawDropdown)}
+            className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+          >
+            <span>💸 Withdraw</span>
+            <svg
+              className={`w-4 h-4 transition-transform ${showWithdrawDropdown ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Withdraw Dropdown Menu */}
+          {showWithdrawDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-10">
+              <button
+                onClick={() => {
+                  setShowPrivacyCashWithdrawModal(true);
+                  setShowWithdrawDropdown(false);
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors"
+                disabled={balance.privacyCashBalance === 0}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🔓</span>
+                  <div className="flex-1">
+                    <div className="font-medium flex items-center justify-between">
+                      <span>Privacy Cash</span>
+                      {balance.privacyCashBalance > 0 && (
+                        <span className="text-xs text-green-400">
+                          {formatCurrency(balance.privacyCashBalance)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-zinc-400">
+                      {balance.privacyCashBalance > 0
+                        ? 'Server-side withdrawal'
+                        : 'No balance available'}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Refresh Button */}
         <button
           onClick={refresh}
@@ -233,6 +291,12 @@ export const PrivateBalance: FC = () => {
         isOpen={showPrivacyCashModal}
         onClose={() => setShowPrivacyCashModal(false)}
         onSuccess={refresh}
+      />
+      <PrivacyCashWithdrawModal
+        isOpen={showPrivacyCashWithdrawModal}
+        onClose={() => setShowPrivacyCashWithdrawModal(false)}
+        onSuccess={refresh}
+        currentBalance={balance.privacyCashBalance}
       />
     </div>
   );
