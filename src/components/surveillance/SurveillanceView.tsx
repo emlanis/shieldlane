@@ -10,9 +10,9 @@ export const SurveillanceView: FC = () => {
 
   if (loading || !data || !trackerView) {
     return (
-      <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
+      <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl">
         <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -29,7 +29,7 @@ export const SurveillanceView: FC = () => {
             <h3 className={`text-2xl font-bold ${riskInfo.color} mb-1`}>
               {riskInfo.title}
             </h3>
-            <p className="text-zinc-400">{riskInfo.description}</p>
+            <p className="text-gray-400">{riskInfo.description}</p>
           </div>
           <div className={`px-4 py-2 rounded-lg ${getRiskColor(data.trackingRisk)}`}>
             <span className="font-semibold uppercase text-xs">
@@ -40,16 +40,16 @@ export const SurveillanceView: FC = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mt-6">
-          <div className="p-4 bg-zinc-900/50 rounded-lg">
-            <p className="text-xs text-zinc-400 mb-1">Exposed Transactions</p>
+          <div className="p-4 bg-zinc-950/50 rounded-lg">
+            <p className="text-xs text-gray-400 mb-1">Exposed Transactions</p>
             <p className="text-2xl font-bold text-red-400">{data.exposedTransactions}</p>
           </div>
-          <div className="p-4 bg-zinc-900/50 rounded-lg">
-            <p className="text-xs text-zinc-400 mb-1">Protected Transactions</p>
+          <div className="p-4 bg-zinc-950/50 rounded-lg">
+            <p className="text-xs text-gray-400 mb-1">Protected Transactions</p>
             <p className="text-2xl font-bold text-green-400">{data.protectedTransactions}</p>
           </div>
-          <div className="p-4 bg-zinc-900/50 rounded-lg">
-            <p className="text-xs text-zinc-400 mb-1">Balance Status</p>
+          <div className="p-4 bg-zinc-950/50 rounded-lg">
+            <p className="text-xs text-gray-400 mb-1">Balance Status</p>
             <p className="text-lg font-bold">
               {data.balanceExposed ? (
                 <span className="text-red-400">Exposed</span>
@@ -62,7 +62,7 @@ export const SurveillanceView: FC = () => {
       </div>
 
       {/* What Trackers Can See */}
-      <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
+      <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <span>👁️</span>
           What Surveillance Tools Can See
@@ -75,16 +75,16 @@ export const SurveillanceView: FC = () => {
               <span className="text-sm font-medium text-red-400">Transaction History</span>
               <span className="text-xs text-red-400/70">{trackerView.visibleTransactions} visible</span>
             </div>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-gray-400">
               All your public transactions are indexed and can be analyzed for patterns.
             </p>
           </div>
 
           {/* Known Interactions */}
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-zinc-400">Known Interactions:</h4>
+            <h4 className="text-sm font-semibold text-gray-400">Known Interactions:</h4>
             {trackerView.knownInteractions.map((interaction: string, i: number) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-zinc-500">
+              <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
                 <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
                 {interaction}
               </div>
@@ -92,13 +92,13 @@ export const SurveillanceView: FC = () => {
           </div>
 
           {/* Tracking Capabilities */}
-          <div className="pt-4 border-t border-zinc-800">
-            <h4 className="text-sm font-semibold text-zinc-400 mb-3">Tracking Capabilities:</h4>
+          <div className="pt-4 border-t border-zinc-900">
+            <h4 className="text-sm font-semibold text-gray-400 mb-3">Tracking Capabilities:</h4>
             <div className="grid gap-2">
               {trackerView.trackingCapabilities.map((capability: string, i: number) => (
-                <div key={i} className="flex items-start gap-2 p-3 bg-zinc-950 rounded-lg">
+                <div key={i} className="flex items-start gap-2 p-3 bg-black rounded-lg">
                   <span className="text-red-500 mt-0.5">⚠️</span>
-                  <span className="text-xs text-zinc-400">{capability}</span>
+                  <span className="text-xs text-gray-400">{capability}</span>
                 </div>
               ))}
             </div>
@@ -108,16 +108,16 @@ export const SurveillanceView: FC = () => {
 
       {/* Recommendations */}
       {data.recommendations.length > 0 && (
-        <div className="p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-xl">
+        <div className="p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-amber-500/30 rounded-xl">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span>💡</span>
             Recommendations
           </h3>
           <div className="space-y-3">
             {data.recommendations.map((rec, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 bg-zinc-900/50 rounded-lg">
-                <span className="text-purple-500 mt-0.5">→</span>
-                <span className="text-sm text-zinc-300">{rec}</span>
+              <div key={i} className="flex items-start gap-3 p-3 bg-zinc-950/50 rounded-lg">
+                <span className="text-amber-500 mt-0.5">→</span>
+                <span className="text-sm text-gray-300">{rec}</span>
               </div>
             ))}
           </div>

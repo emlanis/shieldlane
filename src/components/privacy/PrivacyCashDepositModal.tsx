@@ -137,14 +137,14 @@ export const PrivacyCashDepositModal: FC<PrivacyCashDepositModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 rounded-xl p-6 max-w-md w-full border border-zinc-800">
+      <div className="bg-zinc-950 rounded-xl p-6 max-w-md w-full border border-zinc-900">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <span>🔐</span> Privacy Cash Deposit
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white transition-colors"
             disabled={loading}
           >
             ✕
@@ -153,7 +153,7 @@ export const PrivacyCashDepositModal: FC<PrivacyCashDepositModalProps> = ({
 
         <div className="space-y-4">
           {/* Info Box */}
-          <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-blue-300">
+          <div className="p-4 bg-yellow-400/10 border border-yellow-500/20 rounded-lg text-sm text-blue-300">
             <p className="font-medium mb-1">What is Privacy Cash?</p>
             <p className="text-xs text-blue-200/80">
               Privacy Cash uses server-side keypairs to shield your SOL. Your funds are encrypted
@@ -172,9 +172,9 @@ export const PrivacyCashDepositModal: FC<PrivacyCashDepositModalProps> = ({
               min="0.001"
               step="0.001"
               disabled={loading}
-              className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
             />
-            <p className="text-xs text-zinc-500 mt-1">Minimum: 0.001 SOL</p>
+            <p className="text-xs text-gray-400 mt-1">Minimum: 0.001 SOL</p>
           </div>
 
           {/* Error Message */}
@@ -196,14 +196,14 @@ export const PrivacyCashDepositModal: FC<PrivacyCashDepositModalProps> = ({
             <button
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+              className="flex-1 px-4 py-3 bg-zinc-900 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleDeposit}
               disabled={loading || !amount}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -217,8 +217,8 @@ export const PrivacyCashDepositModal: FC<PrivacyCashDepositModalProps> = ({
           </div>
 
           {/* Privacy Notice */}
-          <div className="pt-4 border-t border-zinc-800">
-            <p className="text-xs text-zinc-500">
+          <div className="pt-4 border-t border-zinc-900">
+            <p className="text-xs text-gray-400">
               🔒 Your funds will be transferred to an encrypted Privacy Cash account. Only you can
               withdraw them using your wallet signature.
             </p>

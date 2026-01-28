@@ -42,7 +42,7 @@ export const PrivateBalance: FC = () => {
         <h2 className="text-2xl font-bold">Your Balance</h2>
         <button
           onClick={() => setShowActualBalance(!showActualBalance)}
-          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-700 rounded-lg text-sm transition-colors flex items-center gap-2"
         >
           <span>{showActualBalance ? '👁️ Hiding Actual' : '🔍 Show Actual'}</span>
         </button>
@@ -63,14 +63,14 @@ export const PrivateBalance: FC = () => {
           ) : (
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-zinc-400 mb-1">Public Balance</p>
+                <p className="text-sm text-gray-400 mb-1">Public Balance</p>
                 <p className="text-3xl font-bold text-red-400">
                   {formatCurrency(balance.publicBalance)}
                 </p>
               </div>
 
               <div className="pt-3 border-t border-red-500/20">
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-gray-400">
                   This is what appears on block explorers and what surveillance tools can track.
                 </p>
               </div>
@@ -101,13 +101,13 @@ export const PrivateBalance: FC = () => {
           ) : (
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-zinc-400 mb-1">Total Holdings</p>
+                <p className="text-sm text-gray-400 mb-1">Total Holdings</p>
                 {showActualBalance ? (
                   <p className="text-3xl font-bold text-green-400">
                     {formatCurrency(balance.totalBalance)}
                   </p>
                 ) : (
-                  <p className="text-3xl font-bold text-zinc-500">••••••</p>
+                  <p className="text-3xl font-bold text-gray-400">••••••</p>
                 )}
               </div>
 
@@ -115,16 +115,16 @@ export const PrivateBalance: FC = () => {
                 <>
                   <div className="pt-3 border-t border-green-500/20 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-400">Public</span>
-                      <span className="text-zinc-300">{formatCurrency(balance.publicBalance)}</span>
+                      <span className="text-gray-400">Public</span>
+                      <span className="text-gray-300">{formatCurrency(balance.publicBalance)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-400">Privacy Cash</span>
+                      <span className="text-gray-400">Privacy Cash</span>
                       <span className="text-green-400">{formatCurrency(balance.privacyCashBalance)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-400">ShadowPay</span>
-                      <span className="text-blue-400">{formatCurrency(balance.shadowPayBalance)}</span>
+                      <span className="text-gray-400">ShadowPay</span>
+                      <span className="text-yellow-400">{formatCurrency(balance.shadowPayBalance)}</span>
                     </div>
                   </div>
 
@@ -144,9 +144,9 @@ export const PrivateBalance: FC = () => {
       </div>
 
       {/* Privacy Status Bar */}
-      <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+      <div className="p-4 bg-zinc-950 rounded-lg border border-zinc-900">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-zinc-400">Privacy Coverage</span>
+          <span className="text-sm text-gray-400">Privacy Coverage</span>
           <span className="text-sm font-medium">
             {balance.totalBalance > 0
               ? Math.round((balance.privateBalance / balance.totalBalance) * 100)
@@ -154,7 +154,7 @@ export const PrivateBalance: FC = () => {
             % Protected
           </span>
         </div>
-        <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-2 bg-zinc-900 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
             style={{
@@ -185,19 +185,19 @@ export const PrivateBalance: FC = () => {
 
           {/* Deposit Dropdown Menu */}
           {showDepositDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-10">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl overflow-hidden z-10">
               <button
                 onClick={() => {
                   setShowPrivacyCashModal(true);
                   setShowDepositDropdown(false);
                 }}
-                className="w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors border-b border-zinc-700"
+                className="w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors border-b border-zinc-800"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">🔐</span>
                   <div>
                     <div className="font-medium">Privacy Cash</div>
-                    <div className="text-xs text-zinc-400">Server-side encryption (Recommended)</div>
+                    <div className="text-xs text-gray-400">Server-side encryption (Recommended)</div>
                   </div>
                 </div>
               </button>
@@ -212,7 +212,7 @@ export const PrivateBalance: FC = () => {
                   <span className="text-xl">🌑</span>
                   <div>
                     <div className="font-medium">ShadowPay</div>
-                    <div className="text-xs text-zinc-400">Mainnet only (Devnet unavailable)</div>
+                    <div className="text-xs text-gray-400">Mainnet only (Devnet unavailable)</div>
                   </div>
                 </div>
               </button>
@@ -224,7 +224,7 @@ export const PrivateBalance: FC = () => {
         <div className="relative" ref={withdrawDropdownRef}>
           <button
             onClick={() => setShowWithdrawDropdown(!showWithdrawDropdown)}
-            className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+            className="w-full px-4 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-purple-700 hover:to-pink-700 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
           >
             <span>💸 Withdraw</span>
             <svg
@@ -239,7 +239,7 @@ export const PrivateBalance: FC = () => {
 
           {/* Withdraw Dropdown Menu */}
           {showWithdrawDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-10">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl overflow-hidden z-10">
               <button
                 onClick={() => {
                   setShowPrivacyCashWithdrawModal(true);
@@ -259,7 +259,7 @@ export const PrivateBalance: FC = () => {
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-zinc-400">
+                    <div className="text-xs text-gray-400">
                       {balance.privacyCashBalance > 0
                         ? 'Server-side withdrawal'
                         : 'No balance available'}
@@ -275,7 +275,7 @@ export const PrivateBalance: FC = () => {
         <button
           onClick={refresh}
           disabled={loading}
-          className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
+          className="px-4 py-3 bg-zinc-900 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
         >
           {loading ? 'Refreshing...' : '🔄 Refresh Balances'}
         </button>

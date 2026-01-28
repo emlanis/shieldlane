@@ -17,7 +17,7 @@ export default function MonitorPage() {
           <div className="text-center space-y-4 p-8">
             <div className="text-6xl mb-4">📊</div>
             <h2 className="text-2xl font-bold">Connect Your Wallet</h2>
-            <p className="text-zinc-400 max-w-md">
+            <p className="text-gray-400 max-w-md">
               Please connect your Solana wallet to view your surveillance analysis.
             </p>
           </div>
@@ -39,7 +39,7 @@ export default function MonitorPage() {
               <span>📊</span>
               Privacy Monitor
             </h1>
-            <p className="text-zinc-400">
+            <p className="text-gray-400">
               Understand what surveillance tools can see about your wallet activity.
             </p>
           </div>
@@ -52,10 +52,10 @@ export default function MonitorPage() {
                 <h3 className="text-lg font-semibold text-orange-400 mb-2">
                   Why Privacy Matters for Whales
                 </h3>
-                <p className="text-sm text-zinc-300 mb-3">
+                <p className="text-sm text-gray-300 mb-3">
                   High-value wallets face unique risks when their activity is publicly visible:
                 </p>
-                <div className="grid md:grid-cols-2 gap-3 text-sm text-zinc-400">
+                <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-400">
                   <div className="flex items-start gap-2">
                     <span className="text-orange-500 mt-0.5">•</span>
                     <span>Front-running: Traders can see and exploit your pending transactions</span>
@@ -91,7 +91,7 @@ export default function MonitorPage() {
           </div>
 
           {/* How Tracking Works */}
-          <div className="mt-8 p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
+          <div className="mt-8 p-6 bg-zinc-950 border border-zinc-900 rounded-xl">
             <h3 className="text-lg font-semibold mb-4">How Wallet Surveillance Works</h3>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
@@ -99,7 +99,7 @@ export default function MonitorPage() {
                   <span className="text-xl">🔍</span>
                 </div>
                 <h4 className="font-semibold text-sm">Transaction Graph Analysis</h4>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-gray-400">
                   Surveillance tools build graphs of all wallet interactions, tracking money flow across
                   the entire blockchain.
                 </p>
@@ -110,7 +110,7 @@ export default function MonitorPage() {
                   <span className="text-xl">🔗</span>
                 </div>
                 <h4 className="font-semibold text-sm">Address Clustering</h4>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-gray-400">
                   Common-input-ownership heuristics and other techniques link your different addresses,
                   revealing your total holdings.
                 </p>
@@ -121,7 +121,7 @@ export default function MonitorPage() {
                   <span className="text-xl">📈</span>
                 </div>
                 <h4 className="font-semibold text-sm">Pattern Recognition</h4>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-gray-400">
                   ML algorithms detect trading patterns, timing behaviors, and counterparty relationships
                   to profile your activity.
                 </p>
@@ -130,23 +130,23 @@ export default function MonitorPage() {
           </div>
 
           {/* Commercial Surveillance */}
-          <div className="mt-6 p-6 bg-gradient-to-br from-purple-900/20 to-transparent border border-purple-500/30 rounded-xl">
+          <div className="mt-6 p-6 bg-gradient-to-br from-purple-900/20 to-transparent border border-amber-500/30 rounded-xl">
             <h3 className="text-lg font-semibold mb-4">Commercial Surveillance Platforms</h3>
-            <p className="text-sm text-zinc-400 mb-4">
+            <p className="text-sm text-gray-400 mb-4">
               Multiple companies provide blockchain surveillance services to exchanges, regulators, and
               traders:
             </p>
             <div className="grid md:grid-cols-2 gap-4 text-sm">
-              <div className="p-4 bg-zinc-900/50 rounded-lg">
-                <h4 className="font-semibold text-zinc-300 mb-2">Block Explorers</h4>
-                <p className="text-xs text-zinc-500">
+              <div className="p-4 bg-zinc-950/50 rounded-lg">
+                <h4 className="font-semibold text-gray-300 mb-2">Block Explorers</h4>
+                <p className="text-xs text-gray-400">
                   Solscan, Solana Explorer, and others make all transaction data easily searchable and
                   linkable.
                 </p>
               </div>
-              <div className="p-4 bg-zinc-900/50 rounded-lg">
-                <h4 className="font-semibold text-zinc-300 mb-2">Analytics Platforms</h4>
-                <p className="text-xs text-zinc-500">
+              <div className="p-4 bg-zinc-950/50 rounded-lg">
+                <h4 className="font-semibold text-gray-300 mb-2">Analytics Platforms</h4>
+                <p className="text-xs text-gray-400">
                   Commercial tools track whale wallets, alert on large transfers, and analyze trading
                   behavior.
                 </p>

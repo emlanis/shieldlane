@@ -95,6 +95,7 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
 
       console.log('[DepositModal] Found transaction data, deserializing...');
       console.log('[DepositModal] Transaction length:', transactionData.length, 'characters');
+      console.log('[DepositModal] FULL BASE64 TRANSACTION:', transactionData);
 
       let transaction: Transaction | VersionedTransaction;
       try {
@@ -114,6 +115,23 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
       }
 
       console.log('[DepositModal] Transaction deserialized successfully');
+
+      // DEBUG: Extract and log all program IDs from the transaction
+      if (transaction instanceof Transaction) {
+        console.log('[DepositModal] === TRANSACTION ANALYSIS ===');
+        console.log('[DepositModal] Number of instructions:', transaction.instructions.length);
+        transaction.instructions.forEach((instruction, index) => {
+          console.log(`[DepositModal] Instruction ${index}:`);
+          console.log(`  - Program ID: ${instruction.programId.toBase58()}`);
+          console.log(`  - Keys (${instruction.keys.length}):`, instruction.keys.map(k => ({
+            pubkey: k.pubkey.toBase58(),
+            isSigner: k.isSigner,
+            isWritable: k.isWritable
+          })));
+          console.log(`  - Data (${instruction.data.length} bytes):`, instruction.data);
+        });
+        console.log('[DepositModal] === END TRANSACTION ANALYSIS ===');
+      }
 
       // Step 2.5: Refresh blockhash to prevent expiration
       console.log('[DepositModal] Step 2.5: Refreshing blockhash...');
@@ -189,21 +207,21 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-md w-full p-6">
+      <div className="bg-zinc-950 border border-zinc-900 rounded-xl max-w-md w-full p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">Deposit to ShadowPay</h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white transition-colors"
           >
             ✕
           </button>
         </div>
 
         {/* Info Box */}
-        <div className="mb-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
-          <p className="text-sm text-zinc-300">
+        <div className="mb-6 p-4 bg-blue-900/20 border border-yellow-500/30 rounded-lg">
+          <p className="text-sm text-gray-300">
             Deposit SOL into the ShadowPay privacy pool. Your funds will be protected using
             Bulletproofs and ElGamal encryption.
           </p>
@@ -211,7 +229,7 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
 
         {/* Amount Input */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-zinc-400 mb-2">
+          <label className="block text-sm font-medium text-gray-400 mb-2">
             Amount (SOL)
           </label>
           <input
@@ -221,7 +239,7 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg focus:outline-none focus:border-amber-500 transition-colors"
             disabled={loading}
           />
         </div>
@@ -245,14 +263,14 @@ export const DepositModal: FC<DepositModalProps> = ({ isOpen, onClose, onSuccess
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex-1 px-4 py-3 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 rounded-lg font-medium transition-colors"
+            className="flex-1 px-4 py-3 bg-zinc-900 hover:bg-zinc-700 disabled:opacity-50 rounded-lg font-medium transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleDeposit}
             disabled={loading || !amount}
-            className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
+            className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
           >
             {loading ? 'Depositing...' : 'Deposit'}
           </button>

@@ -75,7 +75,7 @@ export const getPrivacyLevel = (
   } else if (score >= 60) {
     return {
       level: 'Good',
-      color: 'text-blue-500',
+      color: 'text-yellow-500',
       description: 'Good privacy, but room for improvement',
     };
   } else if (score >= 40) {
