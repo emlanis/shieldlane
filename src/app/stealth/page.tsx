@@ -76,7 +76,7 @@ export default function StealthPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-yellow-500 mt-1">✓</span>
-                  <span>Amount encrypted with Bulletproofs</span>
+                  <span>Executes in TEE (Trusted Execution Environment)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-yellow-500 mt-1">✓</span>
@@ -101,12 +101,12 @@ export default function StealthPage() {
             </h3>
             <div className="space-y-3 text-sm text-gray-400">
               <p>
-                <span className="font-semibold text-gray-300">Zero-Knowledge Proofs:</span> Your transactions
-                use ZK-SNARKs and Bulletproofs to prove validity without revealing sensitive information.
+                <span className="font-semibold text-gray-300">External Mode (Privacy Cash):</span> Uses
+                ZK-SNARKs to hide your identity while keeping amounts and recipients visible on-chain.
               </p>
               <p>
-                <span className="font-semibold text-gray-300">On-Chain Verification:</span> All privacy
-                operations are verified on Solana blockchain, ensuring trustless security.
+                <span className="font-semibold text-gray-300">Internal Mode (MagicBlock):</span> Transactions
+                execute inside Intel TDX secure enclaves (TEE) for maximum privacy - everything is hidden.
               </p>
               <p>
                 <span className="font-semibold text-gray-300">No Middleman:</span> Your keys, your crypto.

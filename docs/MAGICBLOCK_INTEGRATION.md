@@ -13,6 +13,7 @@ Shieldlane now integrates MagicBlock SDK (`@magicblock-labs/ephemeral-rollups-sd
 - **Amount**: Visible on-chain
 - **Recipient**: Visible on-chain
 - **Use Case**: Withdrawals to exchanges, one-way privacy
+- **Balance Model**: Separate privacy pool - requires deposit/withdraw
 - **Implementation**: Handled by Privacy Cash deposit/withdraw modals
 
 ### Internal Mode (MagicBlock PERs - TEE)
@@ -20,7 +21,14 @@ Shieldlane now integrates MagicBlock SDK (`@magicblock-labs/ephemeral-rollups-sd
 - **Amount**: Hidden in TEE
 - **Recipient**: Hidden in TEE
 - **Use Case**: Maximum privacy, confidential transfers
+- **Balance Model**: Uses your regular wallet balance - no deposit needed
 - **Implementation**: Account delegation + MagicBlock ConnectionMagicRouter
+
+**Key Architectural Difference:**
+- Privacy Cash requires depositing SOL into a separate privacy pool (shows on Dashboard)
+- MagicBlock uses your regular wallet balance directly (no separate pool)
+- With MagicBlock, you delegate your account to an Ephemeral Rollup, but SOL stays in your wallet
+- No deposit/withdraw UI needed for MagicBlock - delegation is automatic on first transfer
 
 ## Architecture
 

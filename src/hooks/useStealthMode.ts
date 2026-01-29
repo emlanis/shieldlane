@@ -119,14 +119,19 @@ export const useStealthMode = () => {
     }
 
     try {
-      // Use MagicBlock ConnectionMagicRouter for automatic routing
+      // Use MagicBlock ConnectionMagicRouter with MagicBlock DevNet RPC
+      // Note: Standard Solana RPC doesn't support getDelegationStatus
+      const magicRpcUrl =
+        process.env.NEXT_PUBLIC_MAGICBLOCK_RPC ||
+        'https://devnet-rpc.magicblock.app/';
       const magicConnection = new ConnectionMagicRouter(
-        connection.rpcEndpoint,
+        magicRpcUrl,
         connection.commitment
       );
 
       // Check delegation status
-      const { isDelegated } = await magicConnection.getDelegationStatus(publicKey);
+      const delegationResult = await magicConnection.getDelegationStatus(publicKey);
+      const isDelegated = delegationResult?.isDelegated || false;
 
       if (!isDelegated && currentMode === 'internal') {
         // Delegate account for internal mode
@@ -197,12 +202,62 @@ export const useStealthMode = () => {
       // Mode-specific execution
       if (currentMode === 'external') {
         // External Mode: Use Privacy Cash (ZK-SNARKs)
-        // Note: Privacy Cash deposits/withdrawals are handled in PrivateBalance component
-        // This mode would require depositing to Privacy Cash first
-        toast.error(
-          'External mode requires depositing to Privacy Cash first. Use the deposit button on the dashboard.'
+        toast.loading('Checking Privacy Cash balance...', { id: 'stealth-transfer' });
+
+        // Check Privacy Cash balance
+        const balanceResponse = await fetch(
+          `/api/privacy-cash/balance?walletAddress=${publicKey.toBase58()}`
         );
-        return false;
+        const balanceResult = await balanceResponse.json();
+
+        if (!balanceResult.success || !balanceResult.balance) {
+          toast.error(
+            'No Privacy Cash balance found. Please deposit SOL to Privacy Cash on the Dashboard first.',
+            { id: 'stealth-transfer', duration: 5000 }
+          );
+          return false;
+        }
+
+        const privacyCashBalanceSol = balanceResult.balance / 1e9;
+        if (privacyCashBalanceSol < transfer.amount) {
+          toast.error(
+            `Insufficient Privacy Cash balance. You have ${privacyCashBalanceSol.toFixed(4)} SOL but trying to send ${transfer.amount} SOL`,
+            { id: 'stealth-transfer', duration: 5000 }
+          );
+          return false;
+        }
+
+        toast.loading('Executing private withdrawal via Privacy Cash...', {
+          id: 'stealth-transfer',
+        });
+
+        // Execute Privacy Cash withdrawal
+        const withdrawResponse = await fetch('/api/privacy-cash/withdraw', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            walletAddress: publicKey.toBase58(),
+            recipientAddress: recipientKey.toBase58(),
+            amount: transfer.amount * 1e9, // Convert to lamports
+          }),
+        });
+
+        const withdrawResult = await withdrawResponse.json();
+
+        if (!withdrawResult.success) {
+          toast.error(withdrawResult.error || 'Privacy Cash withdrawal failed', {
+            id: 'stealth-transfer',
+          });
+          return false;
+        }
+
+        toast.success(
+          `External transfer complete! ${transfer.amount} SOL sent privately via Privacy Cash (ZK-SNARKs)`,
+          { id: 'stealth-transfer', duration: 5000 }
+        );
+
+        console.log('Privacy Cash withdrawal signature:', withdrawResult.signature);
+        return true;
       } else {
         // Internal Mode: Use MagicBlock PERs (TEE)
         toast.loading('Verifying TEE integrity...', { id: 'stealth-transfer' });

@@ -166,8 +166,8 @@ export const StealthTransfer: FC = () => {
               </p>
               <p className="text-gray-400">
                 {currentMode === 'external'
-                  ? 'Your identity will be hidden using Groth16 ZK proofs. Amount and recipient are visible on-chain.'
-                  : 'Full privacy using Bulletproofs and ElGamal encryption. Sender, amount, and recipient are all hidden.'}
+                  ? 'Your identity will be hidden using Groth16 ZK proofs (Privacy Cash). Amount and recipient are visible on-chain.'
+                  : 'Full privacy using MagicBlock TEE (Intel TDX secure enclaves). Sender, amount, and recipient are all hidden.'}
               </p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export const StealthTransfer: FC = () => {
 
       {/* Technology Info */}
       <div className="p-4 bg-zinc-950/50 border border-zinc-900 rounded-lg">
-        <h4 className="text-sm font-semibold mb-3 text-gray-400">Cryptographic Primitives Used:</h4>
+        <h4 className="text-sm font-semibold mb-3 text-gray-400">Privacy Technologies:</h4>
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-amber-400 rounded-full" />
@@ -200,15 +200,15 @@ export const StealthTransfer: FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-yellow-400 rounded-full" />
-            <span className="text-gray-400">ElGamal Encryption</span>
+            <span className="text-gray-400">Intel TDX TEE</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-green-500 rounded-full" />
-            <span className="text-gray-400">Bulletproofs</span>
+            <span className="text-gray-400">Ephemeral Rollups</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-orange-500 rounded-full" />
-            <span className="text-gray-400">Pedersen Commitments</span>
+            <span className="text-gray-400">Light Protocol</span>
           </div>
         </div>
       </div>
