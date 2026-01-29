@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PrivacyState, PrivacyMode, PrivacyScore, ShadowWireConfig } from '@/types';
+import { PrivacyState, PrivacyMode, PrivacyScore } from '@/types';
 
 interface PrivacyStore extends PrivacyState {
   // Actions
@@ -7,7 +7,6 @@ interface PrivacyStore extends PrivacyState {
   setPrivacyMode: (mode: PrivacyMode) => void;
   togglePublicView: () => void;
   setPrivacyScore: (score: PrivacyScore | null) => void;
-  setShadowWireConfig: (config: ShadowWireConfig | null) => void;
   reset: () => void;
 }
 
@@ -16,7 +15,6 @@ const initialState: PrivacyState = {
   currentMode: 'external',
   showPublicView: true,
   privacyScore: null,
-  shadowWireConfig: null,
 };
 
 export const usePrivacyStore = create<PrivacyStore>((set) => ({
@@ -40,11 +38,6 @@ export const usePrivacyStore = create<PrivacyStore>((set) => ({
   setPrivacyScore: (score) =>
     set({
       privacyScore: score,
-    }),
-
-  setShadowWireConfig: (config) =>
-    set({
-      shadowWireConfig: config,
     }),
 
   reset: () => set(initialState),

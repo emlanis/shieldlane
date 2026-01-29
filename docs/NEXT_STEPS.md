@@ -11,7 +11,7 @@
 
 ### Phase 2: Privacy SDK Integration
 - [x] Privacy Cash SDK wrapper created
-- [x] ShadowWire API client implemented
+- [x] MagicBlock API client implemented
 - [x] Surveillance detection library built
 - [x] Custom hooks for all features
 - [x] Zustand state management
@@ -116,8 +116,8 @@ yarn add @privacy-cash/sdk
 # Update lib/privacy-cash.ts with actual implementation
 ```
 
-#### ShadowWire API
-The ShadowWire client is ready to use. Test it:
+#### MagicBlock API
+The MagicBlock client is ready to use. Test it:
 
 ```typescript
 // Test API key generation
@@ -154,11 +154,11 @@ await shadowWireClient.depositToPool(wallet, lamports);
 - Monitor: Display privacy score and surveillance analysis
 - Stealth Mode: Explain External vs Internal modes
 - Execute a mock transfer (or show UI)
-- Return to explorer: "Amount now hidden with Bulletproofs"
+- Return to explorer: "Amount now hidden with TEE Privacy"
 
 **2:00-2:30 | Technical Deep Dive**
 - Quick explanation: "Uses ZK-SNARKs from Privacy Cash"
-- "Bulletproofs from ShadowWire hide amounts"
+- "TEE Privacy from MagicBlock hide amounts"
 - "All verified on-chain, no middleman"
 - Show Learn page briefly
 
@@ -234,7 +234,7 @@ vercel
 - [ ] Project title: "Shieldlane - Privacy Wallet for Solana"
 - [ ] Tagline: "Your transactions. Your business. Your Shieldlane."
 - [ ] Category: Private Payments (Track 01)
-- [ ] Bounties targeted: Privacy Cash, ShadowWire, Helius, Encrypt.trade
+- [ ] Bounties targeted: Privacy Cash, MagicBlock, Helius, Encrypt.trade
 - [ ] Team members listed
 - [ ] All links working (GitHub, demo, video)
 
@@ -246,8 +246,8 @@ vercel
 - 🔄 TODO: Integrate actual Privacy Cash SDK when available
 - ✅ Documentation of ZK-SNARK usage
 
-#### Radr Labs / ShadowWire ($10k)
-- ✅ Bulletproofs for amount hiding
+#### Radr Labs / MagicBlock ($10k)
+- ✅ TEE Privacy for amount hiding
 - ✅ External and Internal modes
 - ✅ API client fully implemented
 - ✅ Range proof verification
@@ -276,7 +276,7 @@ vercel
 1. **Complete SDK Integration**
    - Integrate official Privacy Cash SDK
    - Implement real ZK-SNARK proof generation
-   - Connect to actual ShadowPay smart contracts
+   - Connect to actual MagicBlock PERs smart contracts
 
 2. **Enhanced Features**
    - Transaction history with privacy status
@@ -387,7 +387,7 @@ Shieldlane represents a comprehensive approach to privacy on Solana:
 
 1. **Educational**: Teaches users about surveillance risks
 2. **Practical**: Provides real tools to protect privacy
-3. **Technical**: Uses cutting-edge cryptography (ZK-SNARKs, Bulletproofs)
+3. **Technical**: Uses cutting-edge cryptography (ZK-SNARKs, TEE Privacy)
 4. **User-Friendly**: Beautiful UI, clear explanations
 5. **Open Source**: Fully transparent, auditable code
 

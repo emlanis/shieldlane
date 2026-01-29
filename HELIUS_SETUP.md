@@ -111,7 +111,7 @@ NEXT_PUBLIC_SOLANA_NETWORK=devnet
 
 # Optional
 NEXT_PUBLIC_PRIVACY_CASH_PROGRAM_ID=9fhQBbumKEFuXtMBDw8AaQyAjCorLGJQiS3skWZdQyQD
-NEXT_PUBLIC_SHADOWPAY_API_BASE=https://shadow.radr.fun/shadowpay
+# NEXT_PUBLIC_MAGICBLOCK_TEE_RPC=https://devnet.magicblock.app
 ```
 
 ### Why This is Safe

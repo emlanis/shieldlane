@@ -198,29 +198,28 @@ export default function LearnPage() {
               <div className="p-6 bg-gradient-to-br from-blue-900/20 to-transparent border border-yellow-500/30 rounded-xl">
                 <h4 className="font-semibold text-yellow-400 mb-3 text-lg flex items-center gap-2">
                   <span>🎯</span>
-                  Bulletproofs (ShadowWire)
+                  TEE (Trusted Execution Environment)
                 </h4>
                 <p className="text-sm text-gray-400 mb-4">
-                  Short non-interactive zero-knowledge proofs that prove a value is in a certain range
-                  without revealing the value itself.
+                  Hardware-based secure enclaves (Intel TDX) that execute transactions in isolation,
+                  protecting data from the operating system and other applications.
                 </p>
                 <div className="p-4 bg-zinc-950 rounded-lg space-y-3">
                   <div className="flex items-start gap-3">
                     <span className="text-yellow-500 mt-1">✓</span>
                     <div>
-                      <strong className="text-sm text-gray-300">Amount Hiding:</strong>
+                      <strong className="text-sm text-gray-300">Private Ephemeral Rollups:</strong>
                       <p className="text-xs text-gray-400 mt-1">
-                        Transaction amounts are encrypted with ElGamal encryption on BN254 curve
+                        MagicBlock PERs enable confidential transactions within secure enclaves
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="text-yellow-500 mt-1">✓</span>
                     <div>
-                      <strong className="text-sm text-gray-300">Range Proof:</strong>
+                      <strong className="text-sm text-gray-300">Account Delegation:</strong>
                       <p className="text-xs text-gray-400 mt-1">
-                        Bulletproofs prove the encrypted amount is positive and doesn't exceed your
-                        balance
+                        Temporarily delegate accounts to Ephemeral Rollup for private execution
                       </p>
                     </div>
                   </div>
@@ -230,24 +229,22 @@ export default function LearnPage() {
               <div className="p-6 bg-zinc-950 rounded-xl">
                 <h4 className="font-semibold text-green-400 mb-3 flex items-center gap-2">
                   <span>🔒</span>
-                  Pedersen Commitments
+                  MagicBlock Auth
                 </h4>
                 <p className="text-sm text-gray-400">
-                  Cryptographic commitments that hide values while allowing mathematical operations. Used
-                  to commit to amounts without revealing them, with homomorphic properties that enable
-                  privacy-preserving arithmetic.
+                  TEE RPC integrity verification and authentication tokens ensure secure communication
+                  with Private Ephemeral Rollups. Combines hardware attestation with cryptographic proofs.
                 </p>
               </div>
 
               <div className="p-6 bg-zinc-950 rounded-xl">
                 <h4 className="font-semibold text-orange-400 mb-3 flex items-center gap-2">
                   <span>🔐</span>
-                  ElGamal Encryption
+                  Light Protocol Merkle Trees
                 </h4>
                 <p className="text-sm text-gray-400">
-                  Public-key encryption scheme used on the BN254 elliptic curve to encrypt transaction
-                  amounts. Only the recipient can decrypt, while the network can still verify validity
-                  through zero-knowledge proofs.
+                  Privacy Cash uses compressed Merkle trees for ZK-SNARK commitments and nullifiers,
+                  breaking the on-chain link between deposits and withdrawals with cryptographic guarantees.
                 </p>
               </div>
             </div>

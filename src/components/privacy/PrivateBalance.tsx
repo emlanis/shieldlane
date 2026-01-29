@@ -3,14 +3,12 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { usePrivateBalance } from '@/hooks/usePrivateBalance';
 import { formatCurrency } from '@/lib/utils';
-import { DepositModal } from './DepositModal';
 import { PrivacyCashDepositModal } from './PrivacyCashDepositModal';
 import { PrivacyCashWithdrawModal } from './PrivacyCashWithdrawModal';
 
 export const PrivateBalance: FC = () => {
   const { balance, loading, refresh } = usePrivateBalance();
   const [showActualBalance, setShowActualBalance] = useState(false);
-  const [showDepositModal, setShowDepositModal] = useState(false);
   const [showPrivacyCashModal, setShowPrivacyCashModal] = useState(false);
   const [showPrivacyCashWithdrawModal, setShowPrivacyCashWithdrawModal] = useState(false);
   const [showDepositDropdown, setShowDepositDropdown] = useState(false);
@@ -122,10 +120,6 @@ export const PrivateBalance: FC = () => {
                       <span className="text-gray-400">Privacy Cash</span>
                       <span className="text-green-400">{formatCurrency(balance.privacyCashBalance)}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">ShadowPay</span>
-                      <span className="text-yellow-400">{formatCurrency(balance.shadowPayBalance)}</span>
-                    </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2 mt-3">
@@ -191,28 +185,13 @@ export const PrivateBalance: FC = () => {
                   setShowPrivacyCashModal(true);
                   setShowDepositDropdown(false);
                 }}
-                className="w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors border-b border-zinc-800"
+                className="w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">🔐</span>
                   <div>
                     <div className="font-medium">Privacy Cash</div>
                     <div className="text-xs text-gray-400">Server-side encryption (Recommended)</div>
-                  </div>
-                </div>
-              </button>
-              <button
-                onClick={() => {
-                  setShowDepositModal(true);
-                  setShowDepositDropdown(false);
-                }}
-                className="w-full px-4 py-3 text-left hover:bg-zinc-700 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">🌑</span>
-                  <div>
-                    <div className="font-medium">ShadowPay</div>
-                    <div className="text-xs text-gray-400">Mainnet only (Devnet unavailable)</div>
                   </div>
                 </div>
               </button>
@@ -282,11 +261,6 @@ export const PrivateBalance: FC = () => {
       </div>
 
       {/* Modals */}
-      <DepositModal
-        isOpen={showDepositModal}
-        onClose={() => setShowDepositModal(false)}
-        onSuccess={refresh}
-      />
       <PrivacyCashDepositModal
         isOpen={showPrivacyCashModal}
         onClose={() => setShowPrivacyCashModal(false)}

@@ -27,8 +27,8 @@ export class SurveillanceMonitor {
 
       const totalTransactions = signatures.length;
 
-      // Simulate privacy-protected transactions (in production, check Privacy Cash/ShadowPay)
-      const protectedTransactions = 0; // Would query Privacy Cash and ShadowPay pools
+      // Simulate privacy-protected transactions (in production, check Privacy Cash)
+      const protectedTransactions = 0; // Would query Privacy Cash pools
 
       // Calculate exposure
       const exposedTransactions = totalTransactions - protectedTransactions;

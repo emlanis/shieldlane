@@ -100,13 +100,13 @@ export const Footer: FC = () => {
               </li>
               <li>
                 <a
-                  href="https://github.com/Radrdotfun/ShadowWire"
+                  href="https://docs.magicblock.gg"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-gray-400 hover:text-yellow-400 transition-colors"
                 >
                   <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full" />
-                  ShadowWire/ShadowPay
+                  MagicBlock SDK
                 </a>
               </li>
               <li>
@@ -132,7 +132,7 @@ export const Footer: FC = () => {
           <div className="flex items-center gap-4 text-sm text-gray-400">
             <span>ZK-SNARKs</span>
             <span>•</span>
-            <span>Bulletproofs</span>
+            <span>TEE Privacy</span>
             <span>•</span>
             <span>Open Source</span>
           </div>

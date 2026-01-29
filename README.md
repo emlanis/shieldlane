@@ -6,7 +6,7 @@ A privacy-preserving wallet wrapper for high-value Solana users (whales, DAOs, t
 
 ## 🎯 Overview
 
-Shieldlane is a comprehensive privacy solution that shields transaction history and balances for Solana users who need protection from surveillance, front-running, and MEV extraction. Built with cutting-edge cryptographic primitives including ZK-SNARKs and Bulletproofs.
+Shieldlane is a comprehensive privacy solution that shields transaction history and balances for Solana users who need protection from surveillance, front-running, and MEV extraction. Built with cutting-edge cryptographic primitives including ZK-SNARKs and TEE (Trusted Execution Environment) technology.
 
 ### Key Features
 
@@ -21,7 +21,7 @@ Shieldlane is a comprehensive privacy solution that shields transaction history 
 This project is optimized for the following bounties:
 
 1. **Privacy Cash SDK** ($6k Best Overall) - Whale wallet privacy use case
-2. **Radr Labs / ShadowWire** ($10k Grand Prize) - Bulletproofs for hiding amounts
+2. **MagicBlock** ($10k Grand Prize) - TEE privacy for confidential transfers
 3. **Track 01: Private Payments** ($15k) - Main hackathon track
 4. **Helius RPC** ($5k) - RPC infrastructure integration
 5. **Encrypt.trade** ($500) - Educational component about wallet surveillance
@@ -81,11 +81,11 @@ Create a `.env.local` file in the `app/` directory:
 NEXT_PUBLIC_HELIUS_API_KEY=your_helius_api_key_here
 NEXT_PUBLIC_SOLANA_NETWORK=devnet
 
-# ShadowPay API Configuration
-NEXT_PUBLIC_SHADOWPAY_API_BASE=https://shadow.radr.fun/shadowpay
-
 # Privacy Cash Configuration
 NEXT_PUBLIC_PRIVACY_CASH_PROGRAM_ID=9fhQBbumKEFuXtMBDw8AaQyAjCorLGJQiS3skWZdQyQD
+
+# MagicBlock TEE RPC (Optional - for TEE attestation)
+# NEXT_PUBLIC_MAGICBLOCK_TEE_RPC=https://devnet.magicblock.app
 ```
 
 ## 🏗️ Architecture
@@ -97,7 +97,7 @@ NEXT_PUBLIC_PRIVACY_CASH_PROGRAM_ID=9fhQBbumKEFuXtMBDw8AaQyAjCorLGJQiS3skWZdQyQD
 - **Wallet Integration**: Solana Wallet Adapter
 - **Privacy Protocols**:
   - Privacy Cash SDK (ZK-SNARKs)
-  - ShadowWire/ShadowPay (Bulletproofs, ElGamal encryption)
+  - MagicBlock SDK (TEE, Private Ephemeral Rollups)
 - **RPC**: Helius
 - **State Management**: Zustand
 - **UI Components**: Custom components with dark theme
@@ -135,13 +135,13 @@ Shows two views:
 ### 2. Stealth Mode Transfers
 
 **External Mode (Sender Hidden)**
-- ✅ Sender identity hidden using Groth16 ZK proofs
+- ✅ Sender identity hidden using ZK proofs
 - ⚠️ Amount and recipient visible
 - 📋 Best for: Withdrawals to exchanges
 
 **Internal Mode (Maximum Privacy)**
 - ✅ Everything hidden - sender, amount, recipient
-- ✅ Bulletproofs + ElGamal encryption
+- ✅ TEE (Trusted Execution Environment) via MagicBlock PERs
 - 📋 Best for: Sensitive transactions
 
 ### 3. Surveillance Monitor
@@ -162,13 +162,24 @@ Analyzes:
 - **Withdraw**: Prove ownership with ZK-SNARK without revealing which deposit
 - Breaks link between deposits and withdrawals
 
-### ShadowWire Integration
+### MagicBlock Integration
 
-**API Base**: `https://shadow.radr.fun/shadowpay`
+**Private Ephemeral Rollups (PERs)**
 
-- **External Mode**: Groth16 ZK proofs hide sender
-- **Internal Mode**: Bulletproofs + ElGamal hide everything
-- Range proofs ensure encrypted amounts are valid
+The MagicBlock SDK is now integrated and provides:
+
+- **Account Delegation**: Delegate accounts to Ephemeral Rollup using `createDelegateInstruction()`
+- **ConnectionMagicRouter**: Automatic routing between base chain and ER
+- **Delegation Status Checking**: Verify if accounts are delegated with `getDelegationStatus()`
+- **Private Execution**: Transactions executed through delegated accounts run in the ER
+- **TEE Privacy**: Full TEE (Trusted Execution Environment) features available on mainnet
+
+**Implementation Status:**
+- ✅ SDK installed (`@magicblock-labs/ephemeral-rollups-sdk@0.8.4`)
+- ✅ Account delegation implemented in `useStealthMode` hook
+- ✅ ConnectionMagicRouter integrated for automatic routing
+- ✅ Internal mode transfers use MagicBlock PERs
+- ⏳ TEE attestation verification (requires MagicBlock TEE RPC on devnet)
 
 ## 📊 Surveillance Detection
 
@@ -183,13 +194,13 @@ Tracks:
 The `/learn` page covers:
 1. Privacy Basics - Why privacy matters
 2. Surveillance Methods - How tracking works
-3. Privacy Technology - ZK-SNARKs & Bulletproofs explained
+3. Privacy Technology - ZK-SNARKs & TEE explained
 4. Best Practices - For whales and DAOs
 
 ## 🔗 Links
 
 - **Privacy Cash SDK**: https://github.com/Privacy-Cash/privacy-cash-sdk
-- **ShadowWire API**: https://registry.scalar.com/@radr/apis/shadowpay-api
+- **MagicBlock Docs**: https://docs.magicblock.gg
 - **Helius RPC**: https://www.helius.dev/
 - **Solana Explorer**: https://explorer.solana.com/?cluster=devnet
 
@@ -199,7 +210,7 @@ The `/learn` page covers:
 - [x] Deployed to Solana devnet
 - [x] Documentation complete
 - [x] Privacy Cash integration
-- [x] ShadowWire integration
+- [x] MagicBlock SDK integration
 - [x] Helius RPC configuration
 - [x] Educational content
 - [ ] Demo video (max 3 min)
@@ -220,7 +231,7 @@ MIT License - Open Source
 ## 🙏 Acknowledgments
 
 - Privacy Cash team for ZK-SNARK technology
-- Radr Labs for ShadowWire/ShadowPay
+- MagicBlock for TEE privacy technology
 - Helius for RPC infrastructure
 - Privacy Hack 2026 organizers
 

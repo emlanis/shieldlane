@@ -124,8 +124,8 @@ export default function DashboardPage() {
                     break the link between deposits and withdrawals in privacy pools.
                   </div>
                   <div>
-                    <span className="font-semibold text-yellow-400">ShadowWire:</span> Employs Bulletproofs
-                    and ElGamal encryption to hide transaction amounts and participants.
+                    <span className="font-semibold text-yellow-400">MagicBlock:</span> Employs TEE
+                    (Trusted Execution Environment) and Private Ephemeral Rollups for confidential transfers.
                   </div>
                   <div>
                     <span className="font-semibold text-green-400">Helius RPC:</span> Enterprise-grade

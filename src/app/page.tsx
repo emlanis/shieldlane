@@ -65,7 +65,7 @@ export default function Home() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-12">
                 {[
                   { label: 'ZK-SNARK Proofs', value: 'Privacy Cash' },
-                  { label: 'Bulletproofs', value: 'ShadowWire' },
+                  { label: 'TEE Privacy', value: 'MagicBlock' },
                   { label: 'Network', value: 'Solana Devnet' },
                   { label: 'Open Source', value: 'GitHub' },
                 ].map((stat, i) => (
@@ -108,7 +108,7 @@ export default function Home() {
                   </div>
                   <h3 className="text-xl font-semibold mb-2">Stealth Mode Transfers</h3>
                   <p className="text-gray-400">
-                    Two privacy modes: External (sender hidden) or Internal (everything hidden) using Bulletproofs.
+                    Two privacy modes: External (sender hidden) or Internal (everything hidden) using TEE technology.
                   </p>
                 </div>
 
@@ -147,9 +147,9 @@ export default function Home() {
                 </div>
 
                 <div className="p-6 bg-gradient-to-br from-blue-900/20 to-transparent border border-yellow-500/20 rounded-xl">
-                  <h3 className="text-lg font-semibold mb-2">ShadowWire/ShadowPay</h3>
+                  <h3 className="text-lg font-semibold mb-2">MagicBlock PERs</h3>
                   <p className="text-gray-400 text-sm">
-                    Bulletproofs and ElGamal encryption for hiding transaction amounts and participants.
+                    Private Ephemeral Rollups using TEE (Trusted Execution Environment) for confidential transfers.
                   </p>
                 </div>
 

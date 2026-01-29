@@ -1,3 +1,4 @@
+**NOTE: This document describes the old ShadowWire integration. We have since migrated to MagicBlock SDK. See README.md for current status.**
 # Shieldlane Privacy Integration - Implementation Complete
 
 ## Summary

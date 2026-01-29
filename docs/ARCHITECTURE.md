@@ -15,14 +15,14 @@ Shieldlane is built as a privacy-preserving wrapper around Solana, integrating m
 └────────────────┬────────────────┬────────────────┬──────┘
                  │                │                │
       ┌──────────▼────┐  ┌────────▼──────┐  ┌────▼─────┐
-      │ Privacy Cash  │  │  ShadowWire   │  │  Helius  │
+      │ Privacy Cash  │  │  MagicBlock   │  │  Helius  │
       │  SDK Wrapper  │  │  API Client   │  │   RPC    │
       └──────────┬────┘  └────────┬──────┘  └────┬─────┘
                  │                │              │
       ┌──────────▼────────────────▼──────────────▼─────┐
       │              Solana Blockchain (Devnet)         │
       │  ┌──────────────┐        ┌─────────────────┐   │
-      │  │ Privacy Cash │        │ ShadowPay       │   │
+      │  │ Privacy Cash │        │ MagicBlock PERs       │   │
       │  │  Program     │        │  Smart Contract │   │
       │  └──────────────┘        └─────────────────┘   │
       └──────────────────────────────────────────────────┘
@@ -53,9 +53,9 @@ Shieldlane is built as a privacy-preserving wrapper around Solana, integrating m
    - On-chain verification without revealing commitment
    - Nullifier prevents double-spending
 
-### 2. ShadowWire Client (`lib/shadowwire.ts`)
+### 2. MagicBlock Client (`lib/shadowwire.ts`)
 
-**Purpose**: Interface with ShadowPay API for Bulletproof-protected transfers
+**Purpose**: Interface with MagicBlock PERs API for Bulletproof-protected transfers
 
 **Key Methods**:
 - `generateApiKey(wallet)` - Get API credentials
@@ -73,7 +73,7 @@ Shieldlane is built as a privacy-preserving wrapper around Solana, integrating m
 
 **Internal Mode**:
 - Everything encrypted
-- Bulletproofs prove amount validity
+- TEE Privacy prove amount validity
 - ElGamal encryption on BN254 curve
 - Use case: Maximum privacy transfers
 
@@ -120,7 +120,7 @@ interface PrivacyState {
   currentMode: PrivacyMode;       // 'external' | 'internal'
   showPublicView: boolean;        // Show/hide actual balance
   privacyScore: PrivacyScore;     // Current privacy metrics
-  shadowWireConfig: ShadowWireConfig; // ShadowWire state
+  shadowWireConfig: MagicBlockConfig; // MagicBlock state
 }
 ```
 
@@ -144,7 +144,7 @@ interface PrivacyState {
     publicBalance: number;        // Visible on explorer
     privateBalance: number;       // Privacy pool total
     privacyCashBalance: number;   // Privacy Cash pool
-    shadowPayBalance: number;     // ShadowPay pool
+    shadowPayBalance: number;     // MagicBlock PERs pool
     totalBalance: number;         // Sum of all
   },
   loading: boolean,
@@ -354,7 +354,7 @@ function calculatePrivacyScore(
 
 ### Privacy
 - Privacy Cash SDK (integration in progress)
-- ShadowWire API (REST client)
+- MagicBlock API (REST client)
 
 ### Utilities
 - Axios (HTTP client)

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { getBalance, connection } from '@/lib/solana';
 import { PrivacyCashClient } from '@/lib/privacy-cash';
-import { shadowWireClient } from '@/lib/shadowwire';
 import { PrivateBalance } from '@/types';
 
 export const usePrivateBalance = () => {
@@ -13,7 +12,6 @@ export const usePrivateBalance = () => {
     publicBalance: 0,
     privateBalance: 0,
     privacyCashBalance: 0,
-    shadowPayBalance: 0,
     totalBalance: 0,
   });
   const [loading, setLoading] = useState(false);
@@ -25,7 +23,6 @@ export const usePrivateBalance = () => {
         publicBalance: 0,
         privateBalance: 0,
         privacyCashBalance: 0,
-        shadowPayBalance: 0,
         totalBalance: 0,
       });
       return;
@@ -65,18 +62,14 @@ export const usePrivateBalance = () => {
         console.log('[usePrivateBalance] Wallet not fully connected, skipping Privacy Cash balance');
       }
 
-      // Get ShadowPay pool balance
-      const shadowPayBalance = await shadowWireClient.getPoolBalance(publicKey.toBase58());
-
       // Calculate totals
-      const privateBalance = privacyCashBalance + shadowPayBalance;
+      const privateBalance = privacyCashBalance;
       const totalBalance = publicBalance + privateBalance;
 
       console.log('[usePrivateBalance] Setting balance state:', {
         publicBalance,
         privateBalance,
         privacyCashBalance,
-        shadowPayBalance,
         totalBalance,
       });
 
@@ -84,7 +77,6 @@ export const usePrivateBalance = () => {
         publicBalance,
         privateBalance,
         privacyCashBalance,
-        shadowPayBalance,
         totalBalance,
       });
     } catch (err: any) {
