@@ -25,7 +25,7 @@ import toast from 'react-hot-toast';
  * - Internal Mode: Uses MagicBlock PERs (TEE) - everything hidden inside secure enclave
  */
 export const useStealthMode = () => {
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signTransaction, signMessage } = useWallet();
   const { connection } = useConnection();
   const [loading, setLoading] = useState(false);
   const [currentMode, setCurrentMode] = useState<PrivacyMode>('external');
@@ -123,7 +123,7 @@ export const useStealthMode = () => {
       // Note: Standard Solana RPC doesn't support getDelegationStatus
       const magicRpcUrl =
         process.env.NEXT_PUBLIC_MAGICBLOCK_RPC ||
-        'https://devnet-rpc.magicblock.app/';
+        'https://devnet-rpc.magicblock.app';
       const magicConnection = new ConnectionMagicRouter(
         magicRpcUrl,
         connection.commitment
@@ -227,6 +227,34 @@ export const useStealthMode = () => {
           return false;
         }
 
+        toast.loading('Requesting wallet signature...', {
+          id: 'stealth-transfer',
+        });
+
+        // Sign authorization message
+        if (!signMessage) {
+          toast.error('Wallet does not support message signing', {
+            id: 'stealth-transfer',
+          });
+          return false;
+        }
+
+        const message = `Withdraw ${transfer.amount} SOL from Privacy Cash to ${recipientKey.toBase58()} at ${Date.now()}`;
+        const encodedMessage = new TextEncoder().encode(message);
+        let signatureBytes: Uint8Array;
+
+        try {
+          signatureBytes = await signMessage(encodedMessage);
+        } catch (signError: any) {
+          toast.error('Wallet signature required for withdrawal', {
+            id: 'stealth-transfer',
+          });
+          return false;
+        }
+
+        // Convert signature to base64
+        const signatureBase64 = Buffer.from(signatureBytes).toString('base64');
+
         toast.loading('Executing private withdrawal via Privacy Cash...', {
           id: 'stealth-transfer',
         });
@@ -239,6 +267,8 @@ export const useStealthMode = () => {
             walletAddress: publicKey.toBase58(),
             recipientAddress: recipientKey.toBase58(),
             amount: transfer.amount * 1e9, // Convert to lamports
+            signature: signatureBase64,
+            message: message,
           }),
         });
 
