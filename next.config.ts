@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  // Disable Turbopack to avoid workspace detection issues
 
   // Add CSP headers to allow wallet extensions (Phantom, Solflare, etc.)
   async headers() {
