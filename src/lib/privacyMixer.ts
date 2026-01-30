@@ -95,6 +95,11 @@ export class PrivacyMixer {
     account: PublicKey,
     payer: Keypair
   ): Promise<string> {
+    // Wait a bit to ensure the account is fully propagated
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    console.log(`[Privacy Mixer] Delegating account ${account.toBase58()} to TEE...`);
+
     const delegateIx = createDelegateInstruction(
       {
         payer: payer.publicKey,
@@ -112,7 +117,7 @@ export class PrivacyMixer {
 
     // Prepare transaction with MagicBlock's router
     transaction = await this.connection.prepareTransaction(transaction, {
-      commitment: 'confirmed',
+      commitment: 'finalized',
     });
 
     // Sign and send
@@ -121,11 +126,12 @@ export class PrivacyMixer {
       transaction.serialize(),
       {
         skipPreflight: false,
-        preflightCommitment: 'confirmed',
+        preflightCommitment: 'finalized',
       }
     );
 
-    await this.connection.confirmTransaction(signature, 'confirmed');
+    await this.connection.confirmTransaction(signature, 'finalized');
+    console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
     return signature;
   }
 
@@ -148,7 +154,7 @@ export class PrivacyMixer {
 
     // Prepare with MagicBlock router (auto-routes to TEE if delegated)
     transaction = await this.connection.prepareTransaction(transaction, {
-      commitment: 'confirmed',
+      commitment: 'finalized', // Use finalized for stronger confirmation
     });
 
     transaction.sign(from);
@@ -157,11 +163,14 @@ export class PrivacyMixer {
       transaction.serialize(),
       {
         skipPreflight: false,
-        preflightCommitment: 'confirmed',
+        preflightCommitment: 'finalized',
       }
     );
 
-    await this.connection.confirmTransaction(signature, 'confirmed');
+    // Wait for finalized confirmation to ensure account exists on-chain
+    await this.connection.confirmTransaction(signature, 'finalized');
+
+    console.log(`[Privacy Mixer] Transfer confirmed (finalized): ${signature}`);
     return signature;
   }
 
