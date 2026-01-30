@@ -27,6 +27,9 @@ import {
   DEFAULT_PRIVATE_VALIDATOR,
 } from '@magicblock-labs/ephemeral-rollups-sdk';
 
+// Use standard Helius RPC for non-delegated transactions
+const HELIUS_RPC = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://devnet.helius-rpc.com/?api-key=d0ed98b1-d457-4ad0-b6e4-5ac822135d10';
+
 /**
  * Mixer configuration
  */
@@ -69,14 +72,16 @@ export interface MixingSession {
  * Privacy Mixer Service
  */
 export class PrivacyMixer {
-  private connection: ConnectionMagicRouter;
+  private magicConnection: ConnectionMagicRouter;
+  private regularConnection: Connection;
   private config: MixerConfig;
 
   constructor(
     rpcUrl: string,
     config: MixerConfig = DEFAULT_MIXER_CONFIG
   ) {
-    this.connection = new ConnectionMagicRouter(rpcUrl, 'confirmed');
+    this.magicConnection = new ConnectionMagicRouter(rpcUrl, 'confirmed');
+    this.regularConnection = new Connection(HELIUS_RPC, 'confirmed');
     this.config = config;
   }
 
@@ -117,7 +122,7 @@ export class PrivacyMixer {
       transaction.feePayer = payer.publicKey;
 
       // Get fresh blockhash for this transaction
-      const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
+      const { blockhash, lastValidBlockHeight } = await this.magicConnection.getLatestBlockhash('confirmed');
       transaction.recentBlockhash = blockhash;
       transaction.lastValidBlockHeight = lastValidBlockHeight;
 
@@ -125,7 +130,7 @@ export class PrivacyMixer {
 
       // Sign and send
       transaction.sign(payer);
-      const signature = await this.connection.sendRawTransaction(
+      const signature = await this.magicConnection.sendRawTransaction(
         transaction.serialize(),
         {
           skipPreflight: false,
@@ -139,7 +144,7 @@ export class PrivacyMixer {
       let confirmed = false;
       for (let i = 0; i < 30; i++) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        const status = await this.connection.getSignatureStatus(signature);
+        const status = await this.magicConnection.getSignatureStatus(signature);
 
         if (status && status.value) {
           if (status.value.err) {
@@ -171,6 +176,79 @@ export class PrivacyMixer {
   }
 
   /**
+   * Execute a regular transfer (NOT through TEE)
+   * Used for initial funding from Privacy Cash account
+   */
+  private async executeRegularTransfer(
+    from: Keypair,
+    to: PublicKey,
+    amount: number
+  ): Promise<string> {
+    try {
+      const transferIx = SystemProgram.transfer({
+        fromPubkey: from.publicKey,
+        toPubkey: to,
+        lamports: amount,
+      });
+
+      let transaction = new Transaction().add(transferIx);
+      transaction.feePayer = from.publicKey;
+
+      // Get fresh blockhash for this transaction
+      const { blockhash, lastValidBlockHeight } = await this.regularConnection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
+      transaction.lastValidBlockHeight = lastValidBlockHeight;
+
+      console.log(`[Privacy Mixer] Regular transfer from ${from.publicKey.toBase58()} to ${to.toBase58()}, blockhash: ${blockhash.slice(0, 8)}...`);
+
+      transaction.sign(from);
+
+      const signature = await this.regularConnection.sendRawTransaction(
+        transaction.serialize(),
+        {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed',
+        }
+      );
+
+      console.log(`[Privacy Mixer] Regular transfer sent, signature: ${signature}`);
+
+      // Wait for confirmation using getSignatureStatus
+      let confirmed = false;
+      for (let i = 0; i < 30; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const status = await this.regularConnection.getSignatureStatus(signature);
+
+        if (status && status.value) {
+          if (status.value.err) {
+            throw new Error(`Regular transfer failed: ${JSON.stringify(status.value.err)}`);
+          }
+
+          if (status.value.confirmationStatus === 'confirmed' ||
+              status.value.confirmationStatus === 'finalized') {
+            confirmed = true;
+            console.log(`[Privacy Mixer] Regular transfer confirmed: ${signature}`);
+            break;
+          }
+        }
+      }
+
+      if (!confirmed) {
+        throw new Error('Regular transfer confirmation timeout');
+      }
+      return signature;
+    } catch (error: any) {
+      // Get detailed logs from SendTransactionError
+      if (error instanceof SendTransactionError) {
+        const logs = await error.getLogs(this.regularConnection);
+        console.error('[Privacy Mixer] SendTransactionError logs:', logs);
+      }
+      console.error(`[Privacy Mixer] Regular transfer failed:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Execute a transfer between ephemeral accounts in TEE
    */
   private async executeTEETransfer(
@@ -189,15 +267,15 @@ export class PrivacyMixer {
       transaction.feePayer = from.publicKey;
 
       // Get fresh blockhash for this transaction
-      const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
+      const { blockhash, lastValidBlockHeight } = await this.magicConnection.getLatestBlockhash('confirmed');
       transaction.recentBlockhash = blockhash;
       transaction.lastValidBlockHeight = lastValidBlockHeight;
 
-      console.log(`[Privacy Mixer] Transfer from ${from.publicKey.toBase58()} to ${to.toBase58()}, blockhash: ${blockhash.slice(0, 8)}...`);
+      console.log(`[Privacy Mixer] TEE transfer from ${from.publicKey.toBase58()} to ${to.toBase58()}, blockhash: ${blockhash.slice(0, 8)}...`);
 
       transaction.sign(from);
 
-      const signature = await this.connection.sendRawTransaction(
+      const signature = await this.magicConnection.sendRawTransaction(
         transaction.serialize(),
         {
           skipPreflight: false,
@@ -205,13 +283,13 @@ export class PrivacyMixer {
         }
       );
 
-      console.log(`[Privacy Mixer] Transfer sent, signature: ${signature}`);
+      console.log(`[Privacy Mixer] TEE transfer sent, signature: ${signature}`);
 
       // Wait for confirmation using getSignatureStatus (avoids decoding errors)
       let confirmed = false;
       for (let i = 0; i < 30; i++) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        const status = await this.connection.getSignatureStatus(signature);
+        const status = await this.magicConnection.getSignatureStatus(signature);
 
         if (status && status.value) {
           if (status.value.err) {
@@ -234,10 +312,10 @@ export class PrivacyMixer {
     } catch (error: any) {
       // Get detailed logs from SendTransactionError
       if (error instanceof SendTransactionError) {
-        const logs = await error.getLogs(this.connection);
+        const logs = await error.getLogs(this.magicConnection);
         console.error('[Privacy Mixer] SendTransactionError logs:', logs);
       }
-      console.error(`[Privacy Mixer] Transfer failed:`, error);
+      console.error(`[Privacy Mixer] TEE transfer failed:`, error);
       throw error;
     }
   }
@@ -282,9 +360,9 @@ export class PrivacyMixer {
     const ephemeralAccounts = this.createEphemeralAccounts(totalHops);
 
     try {
-      // Step 1: Fund first ephemeral account from source
-      console.log('[Privacy Mixer] Funding first ephemeral account...');
-      await this.executeTEETransfer(
+      // Step 1: Fund first ephemeral account from source (NOT through TEE yet)
+      console.log('[Privacy Mixer] Funding first ephemeral account from Privacy Cash...');
+      await this.executeRegularTransfer(
         sourceKeypair,
         ephemeralAccounts[0].publicKey,
         amount
@@ -343,7 +421,7 @@ export class PrivacyMixer {
    */
   public async isDelegated(account: PublicKey): Promise<boolean> {
     try {
-      const result = await this.connection.getDelegationStatus(account);
+      const result = await this.magicConnection.getDelegationStatus(account);
       return result?.isDelegated || false;
     } catch (error) {
       console.error('[Privacy Mixer] Failed to check delegation:', error);
