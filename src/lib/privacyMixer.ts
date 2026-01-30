@@ -95,50 +95,62 @@ export class PrivacyMixer {
     account: PublicKey,
     payer: Keypair
   ): Promise<string> {
-    // Wait a bit to ensure the account is fully propagated
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // Wait a bit to ensure the account is fully propagated
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-    console.log(`[Privacy Mixer] Delegating account ${account.toBase58()} to TEE...`);
+      console.log(`[Privacy Mixer] Delegating account ${account.toBase58()} to TEE...`);
 
-    const delegateIx = createDelegateInstruction(
-      {
-        payer: payer.publicKey,
-        delegatedAccount: account,
-        ownerProgram: SystemProgram.programId,
-        validator: DEFAULT_PRIVATE_VALIDATOR,
-      },
-      {
-        commitFrequencyMs: 60000,
+      const delegateIx = createDelegateInstruction(
+        {
+          payer: payer.publicKey,
+          delegatedAccount: account,
+          ownerProgram: SystemProgram.programId,
+          validator: DEFAULT_PRIVATE_VALIDATOR,
+        },
+        {
+          commitFrequencyMs: 60000,
+        }
+      );
+
+      let transaction = new Transaction().add(delegateIx);
+      transaction.feePayer = payer.publicKey;
+
+      // Get fresh blockhash for this transaction
+      const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
+      transaction.lastValidBlockHeight = lastValidBlockHeight;
+
+      console.log(`[Privacy Mixer] Delegation blockhash: ${blockhash.slice(0, 8)}...`);
+
+      // Sign and send
+      transaction.sign(payer);
+      const signature = await this.connection.sendRawTransaction(
+        transaction.serialize(),
+        {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed',
+        }
+      );
+
+      // Wait for confirmation with block height tracking
+      await this.connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight,
+      }, 'confirmed');
+
+      console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
+      return signature;
+    } catch (error: any) {
+      // Get detailed logs from SendTransactionError
+      if (error instanceof SendTransactionError) {
+        const logs = await error.getLogs(this.connection);
+        console.error('[Privacy Mixer] SendTransactionError logs:', logs);
       }
-    );
-
-    let transaction = new Transaction().add(delegateIx);
-    transaction.feePayer = payer.publicKey;
-
-    // Get fresh blockhash for this transaction
-    const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
-    transaction.recentBlockhash = blockhash;
-    transaction.lastValidBlockHeight = lastValidBlockHeight;
-
-    // Sign and send
-    transaction.sign(payer);
-    const signature = await this.connection.sendRawTransaction(
-      transaction.serialize(),
-      {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-      }
-    );
-
-    // Wait for confirmation with block height tracking
-    await this.connection.confirmTransaction({
-      signature,
-      blockhash,
-      lastValidBlockHeight,
-    }, 'confirmed');
-
-    console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
-    return signature;
+      console.error(`[Privacy Mixer] Delegation failed:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -149,39 +161,51 @@ export class PrivacyMixer {
     to: PublicKey,
     amount: number
   ): Promise<string> {
-    const transferIx = SystemProgram.transfer({
-      fromPubkey: from.publicKey,
-      toPubkey: to,
-      lamports: amount,
-    });
+    try {
+      const transferIx = SystemProgram.transfer({
+        fromPubkey: from.publicKey,
+        toPubkey: to,
+        lamports: amount,
+      });
 
-    let transaction = new Transaction().add(transferIx);
-    transaction.feePayer = from.publicKey;
+      let transaction = new Transaction().add(transferIx);
+      transaction.feePayer = from.publicKey;
 
-    // Get fresh blockhash for this transaction
-    const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
-    transaction.recentBlockhash = blockhash;
-    transaction.lastValidBlockHeight = lastValidBlockHeight;
+      // Get fresh blockhash for this transaction
+      const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
+      transaction.lastValidBlockHeight = lastValidBlockHeight;
 
-    transaction.sign(from);
+      console.log(`[Privacy Mixer] Transfer from ${from.publicKey.toBase58()} to ${to.toBase58()}, blockhash: ${blockhash.slice(0, 8)}...`);
 
-    const signature = await this.connection.sendRawTransaction(
-      transaction.serialize(),
-      {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
+      transaction.sign(from);
+
+      const signature = await this.connection.sendRawTransaction(
+        transaction.serialize(),
+        {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed',
+        }
+      );
+
+      // Wait for confirmation with block height tracking
+      await this.connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight,
+      }, 'confirmed');
+
+      console.log(`[Privacy Mixer] Transfer confirmed: ${signature}`);
+      return signature;
+    } catch (error: any) {
+      // Get detailed logs from SendTransactionError
+      if (error instanceof SendTransactionError) {
+        const logs = await error.getLogs(this.connection);
+        console.error('[Privacy Mixer] SendTransactionError logs:', logs);
       }
-    );
-
-    // Wait for confirmation with block height tracking
-    await this.connection.confirmTransaction({
-      signature,
-      blockhash,
-      lastValidBlockHeight,
-    }, 'confirmed');
-
-    console.log(`[Privacy Mixer] Transfer confirmed: ${signature}`);
-    return signature;
+      console.error(`[Privacy Mixer] Transfer failed:`, error);
+      throw error;
+    }
   }
 
   /**
