@@ -96,7 +96,7 @@ export class PrivacyMixer {
     payer: Keypair
   ): Promise<string> {
     // Wait a bit to ensure the account is fully propagated
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log(`[Privacy Mixer] Delegating account ${account.toBase58()} to TEE...`);
 
@@ -115,10 +115,10 @@ export class PrivacyMixer {
     let transaction = new Transaction().add(delegateIx);
     transaction.feePayer = payer.publicKey;
 
-    // Prepare transaction with MagicBlock's router
-    transaction = await this.connection.prepareTransaction(transaction, {
-      commitment: 'finalized',
-    });
+    // Get fresh blockhash for this transaction
+    const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
+    transaction.recentBlockhash = blockhash;
+    transaction.lastValidBlockHeight = lastValidBlockHeight;
 
     // Sign and send
     transaction.sign(payer);
@@ -126,11 +126,17 @@ export class PrivacyMixer {
       transaction.serialize(),
       {
         skipPreflight: false,
-        preflightCommitment: 'finalized',
+        preflightCommitment: 'confirmed',
       }
     );
 
-    await this.connection.confirmTransaction(signature, 'finalized');
+    // Wait for confirmation with block height tracking
+    await this.connection.confirmTransaction({
+      signature,
+      blockhash,
+      lastValidBlockHeight,
+    }, 'confirmed');
+
     console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
     return signature;
   }
@@ -152,10 +158,10 @@ export class PrivacyMixer {
     let transaction = new Transaction().add(transferIx);
     transaction.feePayer = from.publicKey;
 
-    // Prepare with MagicBlock router (auto-routes to TEE if delegated)
-    transaction = await this.connection.prepareTransaction(transaction, {
-      commitment: 'finalized', // Use finalized for stronger confirmation
-    });
+    // Get fresh blockhash for this transaction
+    const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
+    transaction.recentBlockhash = blockhash;
+    transaction.lastValidBlockHeight = lastValidBlockHeight;
 
     transaction.sign(from);
 
@@ -163,14 +169,18 @@ export class PrivacyMixer {
       transaction.serialize(),
       {
         skipPreflight: false,
-        preflightCommitment: 'finalized',
+        preflightCommitment: 'confirmed',
       }
     );
 
-    // Wait for finalized confirmation to ensure account exists on-chain
-    await this.connection.confirmTransaction(signature, 'finalized');
+    // Wait for confirmation with block height tracking
+    await this.connection.confirmTransaction({
+      signature,
+      blockhash,
+      lastValidBlockHeight,
+    }, 'confirmed');
 
-    console.log(`[Privacy Mixer] Transfer confirmed (finalized): ${signature}`);
+    console.log(`[Privacy Mixer] Transfer confirmed: ${signature}`);
     return signature;
   }
 
