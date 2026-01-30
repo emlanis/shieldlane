@@ -97,14 +97,24 @@ export const useStealthMode = () => {
         }
       );
 
-      const transaction = new Transaction().add(delegateIx);
-      const { blockhash } = await magicConnection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
+      let transaction = new Transaction().add(delegateIx);
       transaction.feePayer = publicKey;
 
+      // Use MagicBlock's prepareTransaction to set proper blockhash
+      transaction = await magicConnection.prepareTransaction(transaction, {
+        commitment: 'confirmed',
+      });
+
+      // Sign the transaction
       const signed = await signTransaction(transaction);
-      const signature = await magicConnection.sendRawTransaction(signed.serialize());
-      await magicConnection.confirmTransaction(signature);
+
+      // Send and confirm
+      const signature = await magicConnection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
+
+      await magicConnection.confirmTransaction(signature, 'confirmed');
 
       console.log('Account delegated to ER:', signature);
       return true;
