@@ -167,7 +167,7 @@ export class PrivacyMixer {
     } catch (error: any) {
       // Get detailed logs from SendTransactionError
       if (error instanceof SendTransactionError) {
-        const logs = await error.getLogs(this.connection);
+        const logs = await error.getLogs(this.magicConnection);
         console.error('[Privacy Mixer] SendTransactionError logs:', logs);
       }
       console.error(`[Privacy Mixer] Delegation failed:`, error);
