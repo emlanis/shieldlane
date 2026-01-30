@@ -153,14 +153,15 @@ export async function POST(request: NextRequest) {
     // Generate mixing session ID
     const mixId = crypto.randomBytes(16).toString('hex');
 
-    // Create mixing session record with placeholder signature
+    // Create mixing session record with placeholder signature (base58 format like real signatures)
+    const placeholderSig = crypto.randomBytes(64).toString('base64').substring(0, 88); // Valid base58-like string
     const { error: sessionError } = await supabase
       .from('privacy_transactions')
       .insert({
         wallet_address: walletAddress,
         transaction_type: 'mix',
         amount: amount,
-        signature: 'pending', // Placeholder to satisfy NOT NULL constraint
+        signature: placeholderSig, // Placeholder signature to satisfy NOT NULL constraint
         status: 'pending',
         recipient: recipient,
         created_at: new Date().toISOString(),
@@ -199,7 +200,7 @@ export async function POST(request: NextRequest) {
       })
       .eq('wallet_address', walletAddress)
       .eq('transaction_type', 'mix')
-      .eq('signature', 'pending'); // Match the placeholder we inserted
+      .eq('signature', placeholderSig); // Match the placeholder we inserted
 
     // Update last_used_at
     await supabase

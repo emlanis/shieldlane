@@ -128,14 +128,12 @@ export class PrivacyMixer {
 
       console.log(`[Privacy Mixer] Delegation transaction prepared`);
 
-      // Sign after preparing
-      transaction.sign(payer);
-
-      // Send the transaction - try with minimal options
-      const serialized = transaction.serialize();
-      console.log(`[Privacy Mixer] Sending delegation transaction, size: ${serialized.length} bytes`);
-
-      const signature = await this.magicConnection.sendRawTransaction(serialized);
+      // IMPORTANT: Use sendTransaction (NOT sendRawTransaction) with prepared transaction
+      // The MagicRouter's sendTransaction knows how to handle the Magic Router metadata
+      const signature = await this.magicConnection.sendTransaction(transaction, [payer], {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
 
       console.log(`[Privacy Mixer] Delegation sent, signature: ${signature}`);
 
@@ -240,12 +238,11 @@ export class PrivacyMixer {
 
       console.log(`[Privacy Mixer] TEE transfer from ${from.publicKey.toBase58()} to ${to.toBase58()} prepared`);
 
-      // Sign after preparing
-      transaction.sign(from);
-
-      // Send with minimal options
-      const serialized = transaction.serialize();
-      const signature = await this.magicConnection.sendRawTransaction(serialized);
+      // IMPORTANT: Use sendTransaction (NOT sendRawTransaction) with prepared transaction
+      const signature = await this.magicConnection.sendTransaction(transaction, [from], {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
 
       console.log(`[Privacy Mixer] TEE transfer sent, signature: ${signature}`);
 
