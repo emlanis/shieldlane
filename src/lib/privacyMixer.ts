@@ -215,20 +215,28 @@ export class PrivacyMixer {
       onProgress?.(0, totalHops);
       await this.randomDelay();
 
-      // Step 2: Delegate all ephemeral accounts to TEE
-      console.log('[Privacy Mixer] Delegating accounts to TEE...');
-      for (const account of ephemeralAccounts) {
-        await this.delegateToTEE(account.publicKey, account);
-      }
+      // Step 2: Delegate ONLY THE FIRST account to TEE (after funding)
+      console.log('[Privacy Mixer] Delegating first account to TEE...');
+      await this.delegateToTEE(ephemeralAccounts[0].publicKey, ephemeralAccounts[0]);
 
-      // Step 3: Hop through ephemeral accounts in TEE
+      // Step 3: Hop through ephemeral accounts
+      // Fund each account, then delegate it, then transfer from it
       console.log('[Privacy Mixer] Executing hops through TEE...');
       for (let i = 0; i < totalHops - 1; i++) {
         const from = ephemeralAccounts[i];
-        const to = ephemeralAccounts[i + 1].publicKey;
+        const to = ephemeralAccounts[i + 1];
 
         console.log(`[Privacy Mixer] Hop ${i + 1}/${totalHops - 1}...`);
-        await this.executeTEETransfer(from, to, amount);
+
+        // Transfer to next ephemeral account
+        await this.executeTEETransfer(from, to.publicKey, amount);
+
+        // Delegate the newly funded account (if not the last one)
+        if (i < totalHops - 2) {
+          console.log(`[Privacy Mixer] Delegating ephemeral account ${i + 1} to TEE...`);
+          await this.delegateToTEE(to.publicKey, to);
+        }
+
         onProgress?.(i + 1, totalHops);
 
         // Random delay for timing obfuscation
