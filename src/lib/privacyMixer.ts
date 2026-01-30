@@ -121,12 +121,12 @@ export class PrivacyMixer {
       let transaction = new Transaction().add(delegateIx);
       transaction.feePayer = payer.publicKey;
 
-      // Get fresh blockhash for this transaction
-      const { blockhash, lastValidBlockHeight } = await this.magicConnection.getLatestBlockhash('confirmed');
-      transaction.recentBlockhash = blockhash;
-      transaction.lastValidBlockHeight = lastValidBlockHeight;
+      // IMPORTANT: Prepare transaction with MagicRouter before sending
+      transaction = await this.magicConnection.prepareTransaction(transaction, {
+        commitment: 'confirmed',
+      });
 
-      console.log(`[Privacy Mixer] Delegation blockhash: ${blockhash.slice(0, 8)}...`);
+      console.log(`[Privacy Mixer] Delegation transaction prepared`);
 
       // Sign and send
       transaction.sign(payer);
@@ -266,12 +266,12 @@ export class PrivacyMixer {
       let transaction = new Transaction().add(transferIx);
       transaction.feePayer = from.publicKey;
 
-      // Get fresh blockhash for this transaction
-      const { blockhash, lastValidBlockHeight } = await this.magicConnection.getLatestBlockhash('confirmed');
-      transaction.recentBlockhash = blockhash;
-      transaction.lastValidBlockHeight = lastValidBlockHeight;
+      // IMPORTANT: Prepare transaction with MagicRouter before sending
+      transaction = await this.magicConnection.prepareTransaction(transaction, {
+        commitment: 'confirmed',
+      });
 
-      console.log(`[Privacy Mixer] TEE transfer from ${from.publicKey.toBase58()} to ${to.toBase58()}, blockhash: ${blockhash.slice(0, 8)}...`);
+      console.log(`[Privacy Mixer] TEE transfer from ${from.publicKey.toBase58()} to ${to.toBase58()} prepared`);
 
       transaction.sign(from);
 
@@ -360,7 +360,7 @@ export class PrivacyMixer {
     const ephemeralAccounts = this.createEphemeralAccounts(totalHops);
 
     try {
-      // Step 1: Fund first ephemeral account from source (NOT through TEE yet)
+      // Step 1: Fund first ephemeral account from source (regular transfer)
       console.log('[Privacy Mixer] Funding first ephemeral account from Privacy Cash...');
       await this.executeRegularTransfer(
         sourceKeypair,
