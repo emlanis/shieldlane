@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https:",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://*.helius-rpc.com https://*.solana.com https://*.magicblock.gg https://*.magicblock.app wss://*.solana.com",
+              "connect-src 'self' https://*.helius-rpc.com https://*.solana.com https://*.magicblock.gg https://*.magicblock.app wss://*.solana.com wss://*.magicblock.app",
               "frame-src 'self'",
             ].join('; '),
           },

@@ -156,29 +156,55 @@ export const PrivacyMixer: FC = () => {
               </svg>
               <span className="text-sm font-medium text-gray-300">{progress.message}</span>
             </div>
-            <div className="flex gap-2">
-              <div
-                className={`h-2 flex-1 rounded-full ${
-                  progress.stage === 'withdrawing' || progress.stage === 'delegating' || progress.stage === 'transferring' || progress.stage === 'complete'
-                    ? 'bg-amber-500'
-                    : 'bg-zinc-800'
-                }`}
-              />
-              <div
-                className={`h-2 flex-1 rounded-full ${
-                  progress.stage === 'delegating' || progress.stage === 'transferring' || progress.stage === 'complete'
-                    ? 'bg-amber-500'
-                    : 'bg-zinc-800'
-                }`}
-              />
-              <div
-                className={`h-2 flex-1 rounded-full ${
-                  progress.stage === 'transferring' || progress.stage === 'complete'
-                    ? 'bg-amber-500'
-                    : 'bg-zinc-800'
-                }`}
-              />
-            </div>
+
+            {/* Show hop progress if available */}
+            {progress.totalHops && progress.totalHops > 0 && (
+              <div className="mt-3">
+                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <span>Mixing Progress</span>
+                  <span>{progress.hopsCompleted || 0}/{progress.totalHops} hops</span>
+                </div>
+                <div className="flex gap-1">
+                  {Array.from({ length: progress.totalHops }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-2 flex-1 rounded-full transition-colors ${
+                        i < (progress.hopsCompleted || 0)
+                          ? 'bg-amber-500'
+                          : 'bg-zinc-800'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Stage indicators */}
+            {!progress.totalHops && (
+              <div className="flex gap-2 mt-3">
+                <div
+                  className={`h-2 flex-1 rounded-full ${
+                    progress.stage === 'authorizing' || progress.stage === 'mixing' || progress.stage === 'complete'
+                      ? 'bg-amber-500'
+                      : 'bg-zinc-800'
+                  }`}
+                />
+                <div
+                  className={`h-2 flex-1 rounded-full ${
+                    progress.stage === 'mixing' || progress.stage === 'complete'
+                      ? 'bg-amber-500'
+                      : 'bg-zinc-800'
+                  }`}
+                />
+                <div
+                  className={`h-2 flex-1 rounded-full ${
+                    progress.stage === 'complete'
+                      ? 'bg-amber-500'
+                      : 'bg-zinc-800'
+                  }`}
+                />
+              </div>
+            )}
           </div>
         )}
 

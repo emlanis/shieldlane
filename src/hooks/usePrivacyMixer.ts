@@ -1,36 +1,31 @@
 /**
- * Privacy Mixer Hook - Client-side MagicBlock Integration
+ * Privacy Mixer Hook - Proper Server-Side Multi-Hop Mixing
  *
- * This demonstrates proper MagicBlock usage by:
- * 1. Withdrawing from Privacy Cash (ZK-SNARK hidden sender)
- * 2. Using MagicBlock to execute private transfer in TEE
- * 3. Combining both for dual-layer privacy
+ * This hook calls the server-side Privacy Mixer API which:
+ * 1. Decrypts Privacy Cash account keypair server-side
+ * 2. Creates ephemeral accounts (temporary keypairs)
+ * 3. Delegates ephemeral accounts to MagicBlock TEE
+ * 4. Executes multi-hop transfers (3-5 hops) inside TEE
+ * 5. Final transfer reaches recipient with complete privacy
+ *
+ * This is the CORRECT implementation that actually uses MagicBlock properly!
  */
 
 import { useState } from 'react';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import {
-  PublicKey,
-  Transaction,
-  SystemProgram,
-  LAMPORTS_PER_SOL,
-} from '@solana/web3.js';
-import {
-  ConnectionMagicRouter,
-  createDelegateInstruction,
-  DEFAULT_PRIVATE_VALIDATOR,
-} from '@magicblock-labs/ephemeral-rollups-sdk';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import toast from 'react-hot-toast';
 
 export interface MixerProgress {
-  stage: 'idle' | 'withdrawing' | 'delegating' | 'transferring' | 'complete' | 'error';
+  stage: 'idle' | 'authorizing' | 'mixing' | 'complete' | 'error';
   message: string;
+  hopsCompleted?: number;
+  totalHops?: number;
   txSignature?: string;
 }
 
 export function usePrivacyMixer() {
-  const { publicKey, signTransaction, signMessage } = useWallet();
-  const { connection } = useConnection();
+  const { publicKey, signMessage } = useWallet();
   const [progress, setProgress] = useState<MixerProgress>({
     stage: 'idle',
     message: 'Ready to mix',
@@ -38,13 +33,16 @@ export function usePrivacyMixer() {
   const [loading, setLoading] = useState(false);
 
   /**
-   * Execute a privacy mix:
-   * 1. Withdraw from Privacy Cash (sender hidden)
-   * 2. Delegate wallet to MagicBlock ER
-   * 3. Transfer through TEE (path hidden)
+   * Execute a privacy mix with server-side ephemeral account creation:
+   * 1. User signs authorization message
+   * 2. Server decrypts Privacy Cash keypair
+   * 3. Server creates ephemeral accounts
+   * 4. Server delegates accounts to MagicBlock TEE
+   * 5. Server executes multi-hop transfers in TEE
+   * 6. Recipient receives funds with complete privacy
    */
   const executeMix = async (recipient: string, amount: number): Promise<boolean> => {
-    if (!publicKey || !signTransaction || !signMessage) {
+    if (!publicKey || !signMessage) {
       toast.error('Please connect your wallet');
       return false;
     }
@@ -53,95 +51,61 @@ export function usePrivacyMixer() {
     setProgress({ stage: 'idle', message: 'Starting privacy mix...' });
 
     try {
+      // Validate recipient
       const recipientPubkey = new PublicKey(recipient);
       const amountLamports = amount * LAMPORTS_PER_SOL;
 
-      // Step 1: Withdraw from Privacy Cash
-      setProgress({ stage: 'withdrawing', message: 'Withdrawing from Privacy Cash pool...' });
+      // Step 1: Get user authorization signature
+      setProgress({ stage: 'authorizing', message: 'Requesting authorization...' });
 
-      const message = `Withdraw ${amount} SOL for mixing\nTimestamp: ${Date.now()}`;
+      const message = `Authorize Privacy Mix\nAmount: ${amount} SOL\nRecipient: ${recipient}\nTimestamp: ${Date.now()}`;
       const messageBytes = new TextEncoder().encode(message);
       const signature = await signMessage(messageBytes);
       const signatureBase64 = Buffer.from(signature).toString('base64');
 
-      const withdrawResponse = await fetch('/api/privacy-cash/withdraw', {
+      console.log('[Privacy Mixer] Authorization signed');
+
+      // Step 2: Call server-side mixing API (creates ephemeral accounts + TEE delegation)
+      setProgress({
+        stage: 'mixing',
+        message: 'Creating ephemeral accounts and delegating to TEE...',
+        hopsCompleted: 0,
+        totalHops: 0,
+      });
+
+      const mixResponse = await fetch('/api/privacy-mixer/mix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           walletAddress: publicKey.toBase58(),
           amount: amountLamports,
-          recipient: publicKey.toBase58(), // Withdraw to self first
+          recipient: recipientPubkey.toBase58(),
           signature: signatureBase64,
           message,
         }),
       });
 
-      const withdrawData = await withdrawResponse.json();
+      const mixData = await mixResponse.json();
 
-      if (!withdrawData.success) {
-        throw new Error(withdrawData.error || 'Withdrawal failed');
+      if (!mixData.success) {
+        throw new Error(mixData.error || 'Mix failed');
       }
 
-      console.log('[Privacy Mixer] Withdrawal complete:', withdrawData.signature);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for confirmation
-
-      // Step 2: Check delegation status and delegate if needed
-      setProgress({ stage: 'delegating', message: 'Delegating to MagicBlock TEE...' });
-
-      const magicRpcUrl =
-        process.env.NEXT_PUBLIC_MAGICBLOCK_RPC || 'https://devnet-rpc.magicblock.app';
-      const magicConnection = new ConnectionMagicRouter(magicRpcUrl, connection.commitment);
-
-      const delegationResult = await magicConnection.getDelegationStatus(publicKey);
-      const isDelegated = delegationResult?.isDelegated || false;
-
-      console.log('[Privacy Mixer] Delegation status:', isDelegated);
-
-      if (!isDelegated) {
-        // Note: Delegating user wallet accounts may fail with "Invalid account owner"
-        // This is a known limitation - wallet accounts (System Program owned) cannot be delegated
-        // In production, you'd create program-owned accounts (PDAs) for delegation
-        console.log('[Privacy Mixer] Skipping delegation - wallet accounts cannot be delegated to ER');
-        toast('Note: Using standard transfer (wallet delegation not supported)', {
-          icon: '⚠️',
-        });
-      }
-
-      // Step 3: Execute transfer through MagicBlock (will use base chain if not delegated)
-      setProgress({ stage: 'transferring', message: 'Executing private transfer...' });
-
-      const transferIx = SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: recipientPubkey,
-        lamports: amountLamports,
+      console.log('[Privacy Mixer] Mix completed:', {
+        signature: mixData.signature,
+        hops: mixData.hops,
       });
 
-      let transaction = new Transaction().add(transferIx);
-      transaction.feePayer = publicKey;
-
-      // Prepare transaction with MagicBlock router
-      transaction = await magicConnection.prepareTransaction(transaction, {
-        commitment: 'confirmed',
-      });
-
-      const signed = await signTransaction(transaction);
-
-      const txSignature = await magicConnection.sendRawTransaction(signed.serialize(), {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-      });
-
-      await magicConnection.confirmTransaction(txSignature, 'confirmed');
-
-      console.log('[Privacy Mixer] Transfer complete:', txSignature);
-
+      // Update with completion
       setProgress({
         stage: 'complete',
-        message: 'Mix completed successfully!',
-        txSignature,
+        message: `Mix completed through ${mixData.hops} hops!`,
+        hopsCompleted: mixData.hops,
+        totalHops: mixData.hops,
+        txSignature: mixData.signature,
       });
 
-      toast.success(`Mix completed! Signature: ${txSignature.slice(0, 8)}...`);
+      toast.success(`Mix completed! ${mixData.hops} hops executed through TEE`);
       setLoading(false);
       return true;
     } catch (error: any) {
