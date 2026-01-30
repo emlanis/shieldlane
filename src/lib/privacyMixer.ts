@@ -121,22 +121,21 @@ export class PrivacyMixer {
       let transaction = new Transaction().add(delegateIx);
       transaction.feePayer = payer.publicKey;
 
-      // IMPORTANT: Prepare transaction with MagicRouter before sending
+      // IMPORTANT: Prepare transaction with MagicRouter BEFORE signing
       transaction = await this.magicConnection.prepareTransaction(transaction, {
         commitment: 'confirmed',
       });
 
       console.log(`[Privacy Mixer] Delegation transaction prepared`);
 
-      // Sign the transaction
+      // Sign after preparing
       transaction.sign(payer);
 
-      // Send using sendTransaction instead of sendRawTransaction
-      // prepareTransaction already sets up the transaction, so we use sendTransaction
-      const signature = await this.magicConnection.sendTransaction(transaction, [payer], {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-      });
+      // Send the transaction - try with minimal options
+      const serialized = transaction.serialize();
+      console.log(`[Privacy Mixer] Sending delegation transaction, size: ${serialized.length} bytes`);
+
+      const signature = await this.magicConnection.sendRawTransaction(serialized);
 
       console.log(`[Privacy Mixer] Delegation sent, signature: ${signature}`);
 
@@ -234,21 +233,19 @@ export class PrivacyMixer {
       let transaction = new Transaction().add(transferIx);
       transaction.feePayer = from.publicKey;
 
-      // IMPORTANT: Prepare transaction with MagicRouter before sending
+      // IMPORTANT: Prepare transaction with MagicRouter BEFORE signing
       transaction = await this.magicConnection.prepareTransaction(transaction, {
         commitment: 'confirmed',
       });
 
       console.log(`[Privacy Mixer] TEE transfer from ${from.publicKey.toBase58()} to ${to.toBase58()} prepared`);
 
-      // Sign the transaction
+      // Sign after preparing
       transaction.sign(from);
 
-      // Send using sendTransaction instead of sendRawTransaction
-      const signature = await this.magicConnection.sendTransaction(transaction, [from], {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-      });
+      // Send with minimal options
+      const serialized = transaction.serialize();
+      const signature = await this.magicConnection.sendRawTransaction(serialized);
 
       console.log(`[Privacy Mixer] TEE transfer sent, signature: ${signature}`);
 
