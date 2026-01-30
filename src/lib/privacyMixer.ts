@@ -121,15 +121,11 @@ export class PrivacyMixer {
       let transaction = new Transaction().add(delegateIx);
       transaction.feePayer = payer.publicKey;
 
-      // IMPORTANT: Prepare transaction with MagicRouter BEFORE signing
-      transaction = await this.magicConnection.prepareTransaction(transaction, {
-        commitment: 'confirmed',
-      });
+      console.log(`[Privacy Mixer] Sending delegation transaction to MagicRouter...`);
 
-      console.log(`[Privacy Mixer] Delegation transaction prepared`);
-
-      // IMPORTANT: Use sendTransaction (NOT sendRawTransaction) with prepared transaction
-      // The MagicRouter's sendTransaction knows how to handle the Magic Router metadata
+      // IMPORTANT: Use sendTransaction directly (do NOT call prepareTransaction first)
+      // sendTransaction internally calls getLatestBlockhashForTransaction which uses
+      // the custom "getBlockhashForAccounts" RPC method to route to ER or Solana
       const signature = await this.magicConnection.sendTransaction(transaction, [payer], {
         skipPreflight: false,
         preflightCommitment: 'confirmed',
@@ -231,14 +227,10 @@ export class PrivacyMixer {
       let transaction = new Transaction().add(transferIx);
       transaction.feePayer = from.publicKey;
 
-      // IMPORTANT: Prepare transaction with MagicRouter BEFORE signing
-      transaction = await this.magicConnection.prepareTransaction(transaction, {
-        commitment: 'confirmed',
-      });
+      console.log(`[Privacy Mixer] Sending TEE transfer from ${from.publicKey.toBase58()} to ${to.toBase58()}...`);
 
-      console.log(`[Privacy Mixer] TEE transfer from ${from.publicKey.toBase58()} to ${to.toBase58()} prepared`);
-
-      // IMPORTANT: Use sendTransaction (NOT sendRawTransaction) with prepared transaction
+      // IMPORTANT: Use sendTransaction directly (do NOT call prepareTransaction first)
+      // sendTransaction handles blockhash routing automatically via getBlockhashForAccounts
       const signature = await this.magicConnection.sendTransaction(transaction, [from], {
         skipPreflight: false,
         preflightCommitment: 'confirmed',
