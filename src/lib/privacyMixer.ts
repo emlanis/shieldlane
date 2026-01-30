@@ -135,17 +135,29 @@ export class PrivacyMixer {
 
       console.log(`[Privacy Mixer] Delegation sent, signature: ${signature}`);
 
-      // Wait for confirmation using simple signature string
-      const confirmation = await this.connection.confirmTransaction(
-        signature,
-        'confirmed'
-      );
+      // Wait for confirmation using getSignatureStatus (avoids decoding errors)
+      let confirmed = false;
+      for (let i = 0; i < 30; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const status = await this.connection.getSignatureStatus(signature);
 
-      if (confirmation.value.err) {
-        throw new Error(`Delegation failed: ${JSON.stringify(confirmation.value.err)}`);
+        if (status && status.value) {
+          if (status.value.err) {
+            throw new Error(`Delegation failed: ${JSON.stringify(status.value.err)}`);
+          }
+
+          if (status.value.confirmationStatus === 'confirmed' ||
+              status.value.confirmationStatus === 'finalized') {
+            confirmed = true;
+            console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
+            break;
+          }
+        }
       }
 
-      console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
+      if (!confirmed) {
+        throw new Error('Delegation confirmation timeout');
+      }
       return signature;
     } catch (error: any) {
       // Get detailed logs from SendTransactionError
@@ -195,17 +207,29 @@ export class PrivacyMixer {
 
       console.log(`[Privacy Mixer] Transfer sent, signature: ${signature}`);
 
-      // Wait for confirmation using simple signature string
-      const confirmation = await this.connection.confirmTransaction(
-        signature,
-        'confirmed'
-      );
+      // Wait for confirmation using getSignatureStatus (avoids decoding errors)
+      let confirmed = false;
+      for (let i = 0; i < 30; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const status = await this.connection.getSignatureStatus(signature);
 
-      if (confirmation.value.err) {
-        throw new Error(`Transfer failed: ${JSON.stringify(confirmation.value.err)}`);
+        if (status && status.value) {
+          if (status.value.err) {
+            throw new Error(`Transfer failed: ${JSON.stringify(status.value.err)}`);
+          }
+
+          if (status.value.confirmationStatus === 'confirmed' ||
+              status.value.confirmationStatus === 'finalized') {
+            confirmed = true;
+            console.log(`[Privacy Mixer] Transfer confirmed: ${signature}`);
+            break;
+          }
+        }
       }
 
-      console.log(`[Privacy Mixer] Transfer confirmed: ${signature}`);
+      if (!confirmed) {
+        throw new Error('Transfer confirmation timeout');
+      }
       return signature;
     } catch (error: any) {
       // Get detailed logs from SendTransactionError
