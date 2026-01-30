@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Keypair, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { getServerSupabase } from '@/lib/supabase';
 import { createPrivacyMixer } from '@/lib/privacyMixer';
 import * as crypto from 'crypto';
@@ -111,6 +111,32 @@ export async function POST(request: NextRequest) {
       throw new Error('Keypair mismatch - decryption error');
     }
 
+    // Check Privacy Cash account balance
+    const heliusRpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://devnet.helius-rpc.com/?api-key=d0ed98b1-d457-4ad0-b6e4-5ac822135d10';
+    const heliusConnection = new Connection(heliusRpcUrl, 'confirmed');
+    const balance = await heliusConnection.getBalance(sourceKeypair.publicKey);
+
+    // Reserve fees: 5000 lamports per tx × max 7 txs (1 initial + 5 hops + 1 final)
+    const FEE_RESERVE = 5000 * 7;
+    const availableForMix = balance - FEE_RESERVE;
+
+    console.log('[Privacy Mixer] Privacy Cash balance check:', {
+      totalBalance: balance / LAMPORTS_PER_SOL,
+      feeReserve: FEE_RESERVE / LAMPORTS_PER_SOL,
+      availableForMix: availableForMix / LAMPORTS_PER_SOL,
+      requestedAmount: amount / LAMPORTS_PER_SOL,
+    });
+
+    if (availableForMix < amount) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Insufficient balance. Available: ${availableForMix / LAMPORTS_PER_SOL} SOL, Requested: ${amount / LAMPORTS_PER_SOL} SOL (includes fee reserve)`,
+        },
+        { status: 400 }
+      );
+    }
+
     // Get RPC URL
     const magicRpcUrl =
       process.env.NEXT_PUBLIC_MAGICBLOCK_RPC ||
@@ -127,13 +153,14 @@ export async function POST(request: NextRequest) {
     // Generate mixing session ID
     const mixId = crypto.randomBytes(16).toString('hex');
 
-    // Create mixing session record
+    // Create mixing session record with placeholder signature
     const { error: sessionError } = await supabase
       .from('privacy_transactions')
       .insert({
         wallet_address: walletAddress,
         transaction_type: 'mix',
         amount: amount,
+        signature: 'pending', // Placeholder to satisfy NOT NULL constraint
         status: 'pending',
         recipient: recipient,
         created_at: new Date().toISOString(),
@@ -172,7 +199,7 @@ export async function POST(request: NextRequest) {
       })
       .eq('wallet_address', walletAddress)
       .eq('transaction_type', 'mix')
-      .is('signature', null);
+      .eq('signature', 'pending'); // Match the placeholder we inserted
 
     // Update last_used_at
     await supabase
