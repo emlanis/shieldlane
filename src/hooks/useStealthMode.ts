@@ -76,6 +76,15 @@ export const useStealthMode = () => {
     }
 
     try {
+      // Use MagicBlock RPC for delegation operations
+      const magicRpcUrl =
+        process.env.NEXT_PUBLIC_MAGICBLOCK_RPC ||
+        'https://devnet-rpc.magicblock.app';
+      const magicConnection = new ConnectionMagicRouter(
+        magicRpcUrl,
+        connection.commitment
+      );
+
       const delegateIx = createDelegateInstruction(
         {
           payer: publicKey,
@@ -89,13 +98,13 @@ export const useStealthMode = () => {
       );
 
       const transaction = new Transaction().add(delegateIx);
-      const { blockhash } = await connection.getLatestBlockhash();
+      const { blockhash } = await magicConnection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
 
       const signed = await signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(signed.serialize());
-      await connection.confirmTransaction(signature);
+      const signature = await magicConnection.sendRawTransaction(signed.serialize());
+      await magicConnection.confirmTransaction(signature);
 
       console.log('Account delegated to ER:', signature);
       return true;
@@ -265,7 +274,7 @@ export const useStealthMode = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             walletAddress: publicKey.toBase58(),
-            recipientAddress: recipientKey.toBase58(),
+            recipient: recipientKey.toBase58(), // Fixed: was recipientAddress, now recipient
             amount: transfer.amount * 1e9, // Convert to lamports
             signature: signatureBase64,
             message: message,
