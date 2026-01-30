@@ -137,13 +137,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get RPC URL
-    const magicRpcUrl =
+    // Get Magic Router URL (MUST use router, not rpc)
+    const magicRouterUrl =
       process.env.NEXT_PUBLIC_MAGICBLOCK_RPC ||
-      'https://devnet-rpc.magicblock.app';
+      'https://devnet-router.magicblock.app';
 
     // Create Privacy Mixer instance
-    const mixer = createPrivacyMixer(magicRpcUrl, {
+    const mixer = createPrivacyMixer(magicRouterUrl, {
       minHops: 3,
       maxHops: 5,
       hopDelayMs: 2000,
