@@ -11,11 +11,11 @@ export default function MixerPage() {
         <div className="max-w-4xl mx-auto">
           {/* Page Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-blue-400 to-green-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 bg-clip-text text-transparent">
               Privacy Mixer
             </h1>
             <p className="text-lg text-gray-400">
-              Enhanced privacy through dual-layer obfuscation: ZK-SNARKs + TEE shuffling
+              Enhanced privacy through dual-layer protection: ZK-SNARKs + MagicBlock TEE
             </p>
           </div>
 

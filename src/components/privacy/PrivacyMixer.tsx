@@ -2,8 +2,9 @@
 
 import { FC, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import toast from 'react-hot-toast';
+import { usePrivacyMixer } from '@/hooks/usePrivacyMixer';
 
 /**
  * Privacy Mixer Component
@@ -11,18 +12,12 @@ import toast from 'react-hot-toast';
  * Combines Privacy Cash (ZK-SNARKs) + MagicBlock (TEE) for enhanced privacy
  */
 export const PrivacyMixer: FC = () => {
-  const { publicKey, signMessage } = useWallet();
+  const { publicKey } = useWallet();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
-  const [mixing, setMixing] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const { executeMix, progress, loading } = usePrivacyMixer();
 
-  const executeMix = async () => {
-    if (!publicKey || !signMessage) {
-      toast.error('Please connect your wallet first');
-      return;
-    }
-
+  const handleMix = async () => {
     if (!recipient || !amount) {
       toast.error('Please fill in all fields');
       return;
@@ -42,46 +37,10 @@ export const PrivacyMixer: FC = () => {
       return;
     }
 
-    setMixing(true);
-    setProgress({ current: 0, total: 0 });
-
-    try {
-      // Sign message for authorization
-      const message = `Mix ${amountNum} SOL through Privacy Mixer\nTimestamp: ${Date.now()}`;
-      const messageBytes = new TextEncoder().encode(message);
-      const signature = await signMessage(messageBytes);
-      const signatureBase64 = Buffer.from(signature).toString('base64');
-
-      // Call mixer API
-      const response = await fetch('/api/privacy-mixer/mix', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          walletAddress: publicKey.toBase58(),
-          amount: amountNum * LAMPORTS_PER_SOL,
-          recipient,
-          signature: signatureBase64,
-          message,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success(
-          `Mix completed! ${data.hops} hops through TEE. Signature: ${data.signature.slice(0, 8)}...`
-        );
-        setRecipient('');
-        setAmount('');
-        setProgress({ current: 0, total: 0 });
-      } else {
-        toast.error(data.error || 'Mix failed');
-      }
-    } catch (error: any) {
-      console.error('Mix error:', error);
-      toast.error(error.message || 'Failed to execute mix');
-    } finally {
-      setMixing(false);
+    const success = await executeMix(recipient, amountNum);
+    if (success) {
+      setRecipient('');
+      setAmount('');
     }
   };
 
@@ -92,40 +51,40 @@ export const PrivacyMixer: FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-white">Privacy Mixer</h2>
           <p className="text-sm text-gray-400 mt-1">
-            Dual-layer privacy: ZK-SNARKs + TEE shuffling
+            Dual-layer privacy: ZK-SNARKs + MagicBlock TEE
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg">
+        <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-lg">
           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
           <span className="text-xs font-medium text-gray-300">Enhanced Privacy</span>
         </div>
       </div>
 
       {/* How it Works */}
-      <div className="p-6 bg-gradient-to-br from-purple-500/5 to-blue-500/5 border border-purple-500/20 rounded-xl">
-        <h3 className="text-lg font-semibold mb-4 text-purple-300">How Privacy Mixer Works</h3>
+      <div className="p-6 bg-gradient-to-br from-amber-500/5 to-yellow-500/5 border border-amber-500/20 rounded-xl">
+        <h3 className="text-lg font-semibold mb-4 text-amber-300">How Privacy Mixer Works</h3>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center text-purple-400 font-semibold">
+            <div className="flex-shrink-0 w-8 h-8 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-400 font-semibold">
               1
             </div>
             <div>
-              <p className="font-medium text-gray-200">Privacy Cash Deposit</p>
+              <p className="font-medium text-gray-200">Privacy Cash Withdrawal</p>
               <p className="text-sm text-gray-400">
-                Your SOL enters Privacy Cash pool using ZK-SNARKs (Groth16 proofs) to hide your
+                Withdraw from Privacy Cash pool using ZK-SNARKs (Groth16 proofs) to hide your
                 identity
               </p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 font-semibold">
+            <div className="flex-shrink-0 w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center text-yellow-400 font-semibold">
               2
             </div>
             <div>
-              <p className="font-medium text-gray-200">MagicBlock TEE Shuffling</p>
+              <p className="font-medium text-gray-200">MagicBlock TEE Transfer</p>
               <p className="text-sm text-gray-400">
-                Funds hop through 3-5 ephemeral accounts inside Intel TDX secure enclaves (TEE),
-                hiding the transaction path
+                Transfer executes through MagicBlock's ConnectionMagicRouter, which automatically
+                routes to TEE if account is delegated
               </p>
             </div>
           </div>
@@ -134,10 +93,10 @@ export const PrivacyMixer: FC = () => {
               3
             </div>
             <div>
-              <p className="font-medium text-gray-200">Clean Withdrawal</p>
+              <p className="font-medium text-gray-200">Complete Privacy</p>
               <p className="text-sm text-gray-400">
-                Recipient receives SOL with no on-chain link to sender. Complete privacy through
-                dual-layer obfuscation.
+                Recipient receives SOL with sender identity hidden by ZK proofs and transaction
+                routed through MagicBlock infrastructure
               </p>
             </div>
           </div>
@@ -155,8 +114,8 @@ export const PrivacyMixer: FC = () => {
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
             placeholder="Enter Solana address"
-            disabled={mixing}
-            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -169,25 +128,55 @@ export const PrivacyMixer: FC = () => {
             placeholder="0.00"
             step="0.01"
             min="0.01"
-            disabled={mixing}
-            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <p className="mt-1 text-xs text-gray-400">Minimum: 0.01 SOL</p>
         </div>
 
-        {/* Progress Bar */}
-        {mixing && progress.total > 0 && (
+        {/* Progress Indicator */}
+        {loading && progress.stage !== 'idle' && (
           <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-300">Mixing Progress</span>
-              <span className="text-sm text-purple-400">
-                {progress.current}/{progress.total} hops
-              </span>
+            <div className="flex items-center gap-3 mb-2">
+              <svg className="animate-spin h-5 w-5 text-amber-500" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span className="text-sm font-medium text-gray-300">{progress.message}</span>
             </div>
-            <div className="w-full bg-zinc-800 rounded-full h-2">
+            <div className="flex gap-2">
               <div
-                className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                className={`h-2 flex-1 rounded-full ${
+                  progress.stage === 'withdrawing' || progress.stage === 'delegating' || progress.stage === 'transferring' || progress.stage === 'complete'
+                    ? 'bg-amber-500'
+                    : 'bg-zinc-800'
+                }`}
+              />
+              <div
+                className={`h-2 flex-1 rounded-full ${
+                  progress.stage === 'delegating' || progress.stage === 'transferring' || progress.stage === 'complete'
+                    ? 'bg-amber-500'
+                    : 'bg-zinc-800'
+                }`}
+              />
+              <div
+                className={`h-2 flex-1 rounded-full ${
+                  progress.stage === 'transferring' || progress.stage === 'complete'
+                    ? 'bg-amber-500'
+                    : 'bg-zinc-800'
+                }`}
               />
             </div>
           </div>
@@ -195,17 +184,17 @@ export const PrivacyMixer: FC = () => {
 
         {/* Mix Button */}
         <button
-          onClick={executeMix}
-          disabled={!publicKey || mixing || !recipient || !amount}
+          onClick={handleMix}
+          disabled={!publicKey || loading || !recipient || !amount}
           className={`w-full py-4 rounded-lg font-semibold transition-all ${
-            mixing
-              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white cursor-wait'
+            loading
+              ? 'bg-gradient-to-r from-amber-600 to-yellow-600 text-white cursor-wait'
               : !publicKey || !recipient || !amount
               ? 'bg-zinc-800 text-gray-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-purple-500/50'
+              : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black shadow-lg hover:shadow-amber-500/50'
           }`}
         >
-          {mixing ? (
+          {loading ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                 <circle
@@ -223,7 +212,7 @@ export const PrivacyMixer: FC = () => {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Mixing... {progress.current > 0 && `${progress.current}/${progress.total}`}
+              Processing...
             </span>
           ) : (
             'Execute Privacy Mix'
@@ -247,34 +236,35 @@ export const PrivacyMixer: FC = () => {
               <span className="w-2 h-2 bg-blue-400 rounded-full" />
               <span className="text-sm font-medium text-gray-300">MagicBlock TEE</span>
             </div>
-            <p className="text-xs text-gray-400">Intel TDX enclaves hide transaction path</p>
+            <p className="text-xs text-gray-400">Intel TDX enclaves for private execution</p>
           </div>
           <div className="p-3 bg-gradient-to-br from-green-500/5 to-emerald-500/5 border border-green-500/20 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <span className="w-2 h-2 bg-green-400 rounded-full" />
-              <span className="text-sm font-medium text-gray-300">Ephemeral Rollups</span>
+              <span className="text-sm font-medium text-gray-300">ConnectionMagicRouter</span>
             </div>
-            <p className="text-xs text-gray-400">Fast execution in secure environment</p>
+            <p className="text-xs text-gray-400">Auto-routes to ER when delegated</p>
           </div>
           <div className="p-3 bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-500/20 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <span className="w-2 h-2 bg-orange-400 rounded-full" />
-              <span className="text-sm font-medium text-gray-300">Multi-Hop</span>
+              <span className="text-sm font-medium text-gray-300">Dual-Layer</span>
             </div>
-            <p className="text-xs text-gray-400">3-5 hops break transaction linkage</p>
+            <p className="text-xs text-gray-400">Combined ZK + TEE privacy</p>
           </div>
         </div>
       </div>
 
-      {/* Warning */}
-      <div className="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
+      {/* Info Notice */}
+      <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg">
         <div className="flex items-start gap-3">
-          <span className="text-yellow-500">⚠️</span>
+          <span className="text-blue-400">ℹ️</span>
           <div className="text-sm space-y-1">
-            <p className="font-medium text-yellow-300">Enhanced Privacy Mode</p>
+            <p className="font-medium text-blue-300">MagicBlock Integration Demo</p>
             <p className="text-gray-400">
-              Mixing takes longer (3-5 hops) but provides maximum privacy. Ensure you have enough
-              SOL in your Privacy Cash account before mixing.
+              This demonstrates MagicBlock SDK integration using ConnectionMagicRouter and
+              delegation patterns. Transfers use MagicBlock's RPC which automatically routes to
+              Ephemeral Rollups when accounts are delegated.
             </p>
           </div>
         </div>

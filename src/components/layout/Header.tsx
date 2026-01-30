@@ -41,10 +41,9 @@ export const Header: FC = () => {
           </Link>
           <Link
             href="/mixer"
-            className="text-sm text-gray-400 hover:text-purple-400 transition-colors font-medium flex items-center gap-1"
+            className="text-sm text-gray-400 hover:text-amber-400 transition-colors font-medium"
           >
-            <span>🎭</span>
-            <span>Mixer</span>
+            Mixer
           </Link>
           <Link
             href="/monitor"
