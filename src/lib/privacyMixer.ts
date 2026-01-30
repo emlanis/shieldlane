@@ -140,29 +140,11 @@ export class PrivacyMixer {
 
       console.log(`[Privacy Mixer] Delegation sent, signature: ${signature}`);
 
-      // Wait for confirmation using getSignatureStatus (avoids decoding errors)
-      let confirmed = false;
-      for (let i = 0; i < 30; i++) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const status = await this.magicConnection.getSignatureStatus(signature);
+      // Wait for confirmation - use standard Solana confirmation instead of getSignatureStatus
+      // MagicBlock RPC may not support getSignatureStatus properly
+      await this.magicConnection.confirmTransaction(signature, 'confirmed');
 
-        if (status && status.value) {
-          if (status.value.err) {
-            throw new Error(`Delegation failed: ${JSON.stringify(status.value.err)}`);
-          }
-
-          if (status.value.confirmationStatus === 'confirmed' ||
-              status.value.confirmationStatus === 'finalized') {
-            confirmed = true;
-            console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
-            break;
-          }
-        }
-      }
-
-      if (!confirmed) {
-        throw new Error('Delegation confirmation timeout');
-      }
+      console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
       return signature;
     } catch (error: any) {
       // Get detailed logs from SendTransactionError
@@ -213,29 +195,10 @@ export class PrivacyMixer {
 
       console.log(`[Privacy Mixer] Regular transfer sent, signature: ${signature}`);
 
-      // Wait for confirmation using getSignatureStatus
-      let confirmed = false;
-      for (let i = 0; i < 30; i++) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const status = await this.regularConnection.getSignatureStatus(signature);
+      // Wait for confirmation using standard confirmTransaction
+      await this.regularConnection.confirmTransaction(signature, 'confirmed');
 
-        if (status && status.value) {
-          if (status.value.err) {
-            throw new Error(`Regular transfer failed: ${JSON.stringify(status.value.err)}`);
-          }
-
-          if (status.value.confirmationStatus === 'confirmed' ||
-              status.value.confirmationStatus === 'finalized') {
-            confirmed = true;
-            console.log(`[Privacy Mixer] Regular transfer confirmed: ${signature}`);
-            break;
-          }
-        }
-      }
-
-      if (!confirmed) {
-        throw new Error('Regular transfer confirmation timeout');
-      }
+      console.log(`[Privacy Mixer] Regular transfer confirmed: ${signature}`);
       return signature;
     } catch (error: any) {
       // Get detailed logs from SendTransactionError
@@ -285,29 +248,10 @@ export class PrivacyMixer {
 
       console.log(`[Privacy Mixer] TEE transfer sent, signature: ${signature}`);
 
-      // Wait for confirmation using getSignatureStatus (avoids decoding errors)
-      let confirmed = false;
-      for (let i = 0; i < 30; i++) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const status = await this.magicConnection.getSignatureStatus(signature);
+      // Wait for confirmation using standard confirmTransaction
+      await this.magicConnection.confirmTransaction(signature, 'confirmed');
 
-        if (status && status.value) {
-          if (status.value.err) {
-            throw new Error(`Transfer failed: ${JSON.stringify(status.value.err)}`);
-          }
-
-          if (status.value.confirmationStatus === 'confirmed' ||
-              status.value.confirmationStatus === 'finalized') {
-            confirmed = true;
-            console.log(`[Privacy Mixer] Transfer confirmed: ${signature}`);
-            break;
-          }
-        }
-      }
-
-      if (!confirmed) {
-        throw new Error('Transfer confirmation timeout');
-      }
+      console.log(`[Privacy Mixer] Transfer confirmed: ${signature}`);
       return signature;
     } catch (error: any) {
       // Get detailed logs from SendTransactionError
