@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
+  // Fix Turbopack workspace root detection
+  turbopack: {
+    root: '/Users/emlanis/Documents/shieldlane',
+  },
+
   // Add CSP headers to allow wallet extensions (Phantom, Solflare, etc.)
   async headers() {
     return [
