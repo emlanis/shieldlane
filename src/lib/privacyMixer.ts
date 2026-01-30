@@ -95,21 +95,21 @@ export class PrivacyMixer {
 
   /**
    * Delegate an account to MagicBlock's TEE
+   * IMPORTANT: The delegated account itself must sign the delegation transaction
    */
   private async delegateToTEE(
-    account: PublicKey,
-    payer: Keypair
+    accountKeypair: Keypair
   ): Promise<string> {
     try {
       // Wait a bit to ensure the account is fully propagated
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      console.log(`[Privacy Mixer] Delegating account ${account.toBase58()} to TEE...`);
+      console.log(`[Privacy Mixer] Delegating account ${accountKeypair.publicKey.toBase58()} to TEE...`);
 
       const delegateIx = createDelegateInstruction(
         {
-          payer: payer.publicKey,
-          delegatedAccount: account,
+          payer: accountKeypair.publicKey,
+          delegatedAccount: accountKeypair.publicKey,
           ownerProgram: SystemProgram.programId,
           validator: DEFAULT_PRIVATE_VALIDATOR,
         },
@@ -119,14 +119,15 @@ export class PrivacyMixer {
       );
 
       let transaction = new Transaction().add(delegateIx);
-      transaction.feePayer = payer.publicKey;
+      transaction.feePayer = accountKeypair.publicKey;
 
       console.log(`[Privacy Mixer] Sending delegation transaction to MagicRouter...`);
 
       // IMPORTANT: Use sendTransaction directly (do NOT call prepareTransaction first)
       // sendTransaction internally calls getLatestBlockhashForTransaction which uses
       // the custom "getBlockhashForAccounts" RPC method to route to ER or Solana
-      const signature = await this.magicConnection.sendTransaction(transaction, [payer], {
+      // The delegated account MUST sign the transaction (required by SDK)
+      const signature = await this.magicConnection.sendTransaction(transaction, [accountKeypair], {
         skipPreflight: false,
         preflightCommitment: 'confirmed',
       });
@@ -307,7 +308,7 @@ export class PrivacyMixer {
 
       // Step 2: Delegate ONLY THE FIRST account to TEE (after funding)
       console.log('[Privacy Mixer] Delegating first account to TEE...');
-      await this.delegateToTEE(ephemeralAccounts[0].publicKey, ephemeralAccounts[0]);
+      await this.delegateToTEE(ephemeralAccounts[0]);
 
       // Step 3: Hop through ephemeral accounts
       // Fund each account, then delegate it, then transfer from it
@@ -324,7 +325,7 @@ export class PrivacyMixer {
         // Delegate the newly funded account (if not the last one)
         if (i < totalHops - 2) {
           console.log(`[Privacy Mixer] Delegating ephemeral account ${i + 1} to TEE...`);
-          await this.delegateToTEE(to.publicKey, to);
+          await this.delegateToTEE(to);
         }
 
         onProgress?.(i + 1, totalHops);
