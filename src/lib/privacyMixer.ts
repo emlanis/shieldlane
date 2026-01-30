@@ -133,12 +133,17 @@ export class PrivacyMixer {
         }
       );
 
-      // Wait for confirmation with block height tracking
-      await this.connection.confirmTransaction({
+      console.log(`[Privacy Mixer] Delegation sent, signature: ${signature}`);
+
+      // Wait for confirmation using simple signature string
+      const confirmation = await this.connection.confirmTransaction(
         signature,
-        blockhash,
-        lastValidBlockHeight,
-      }, 'confirmed');
+        'confirmed'
+      );
+
+      if (confirmation.value.err) {
+        throw new Error(`Delegation failed: ${JSON.stringify(confirmation.value.err)}`);
+      }
 
       console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
       return signature;
@@ -188,12 +193,17 @@ export class PrivacyMixer {
         }
       );
 
-      // Wait for confirmation with block height tracking
-      await this.connection.confirmTransaction({
+      console.log(`[Privacy Mixer] Transfer sent, signature: ${signature}`);
+
+      // Wait for confirmation using simple signature string
+      const confirmation = await this.connection.confirmTransaction(
         signature,
-        blockhash,
-        lastValidBlockHeight,
-      }, 'confirmed');
+        'confirmed'
+      );
+
+      if (confirmation.value.err) {
+        throw new Error(`Transfer failed: ${JSON.stringify(confirmation.value.err)}`);
+      }
 
       console.log(`[Privacy Mixer] Transfer confirmed: ${signature}`);
       return signature;
