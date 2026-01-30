@@ -40,6 +40,13 @@ export const Header: FC = () => {
             Stealth Mode
           </Link>
           <Link
+            href="/mixer"
+            className="text-sm text-gray-400 hover:text-purple-400 transition-colors font-medium flex items-center gap-1"
+          >
+            <span>🎭</span>
+            <span>Mixer</span>
+          </Link>
+          <Link
             href="/monitor"
             className="text-sm text-gray-400 hover:text-amber-400 transition-colors font-medium"
           >
