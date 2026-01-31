@@ -5,6 +5,8 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
 import toast from 'react-hot-toast';
 import { usePrivacyMixer } from '@/hooks/usePrivacyMixer';
+import { usePrivateBalance } from '@/hooks/usePrivateBalance';
+import { formatCurrency } from '@/lib/utils';
 
 /**
  * Privacy Mixer Component
@@ -16,6 +18,7 @@ export const PrivacyMixer: FC = () => {
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const { executeMix, progress, loading } = usePrivacyMixer();
+  const { balance, loading: balanceLoading } = usePrivateBalance();
 
   const handleMix = async () => {
     if (!recipient || !amount) {
@@ -105,6 +108,25 @@ export const PrivacyMixer: FC = () => {
 
       {/* Mixer Form */}
       <div className="p-6 bg-zinc-950/50 border border-zinc-900 rounded-xl space-y-4">
+        {/* Available Balance Display */}
+        <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-400">Available Privacy Cash Balance:</span>
+            {balanceLoading ? (
+              <div className="h-6 w-20 bg-zinc-800 animate-pulse rounded" />
+            ) : (
+              <span className="text-lg font-bold text-green-400">
+                {formatCurrency(balance.privacyCashBalance)}
+              </span>
+            )}
+          </div>
+          {balance.privacyCashBalance === 0 && !balanceLoading && (
+            <p className="mt-2 text-xs text-amber-400">
+              No Privacy Cash balance. Deposit first to use the mixer.
+            </p>
+          )}
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-2 text-gray-300">
             Recipient Address
