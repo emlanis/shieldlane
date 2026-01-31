@@ -103,7 +103,7 @@ export function usePrivacyMixer() {
         txSignature: mixData.signature,
       });
 
-      toast.success('Mix completed! Sender hidden via Privacy Cash ZK-SNARKs');
+      toast.success('Mix completed! Transaction secured via MagicBlock TEE');
       setLoading(false);
       return true;
     } catch (error: any) {

@@ -231,16 +231,29 @@ export async function POST(request: NextRequest) {
     await heliusConnection.confirmTransaction(finalSignature, 'confirmed');
     console.log(`[Privacy Mixer] Mix completed: ${finalSignature}`);
 
-    // Update last_used_at
+    // Get updated Privacy Cash balance after mix
+    const finalPrivacyBalance = await heliusConnection.getBalance(sourceKeypair.publicKey);
+    console.log(`[Privacy Mixer] Updated Privacy Cash balance: ${finalPrivacyBalance / LAMPORTS_PER_SOL} SOL`);
+
+    // Update last_used_at and sync cached balance
     await supabase
       .from('privacy_accounts')
       .update({ last_used_at: new Date().toISOString() })
       .eq('wallet_address', walletAddress);
 
+    // Update cached balance in privacy_balances table
+    await supabase
+      .from('privacy_balances')
+      .upsert({
+        wallet_address: walletAddress,
+        balance: finalPrivacyBalance,
+        updated_at: new Date().toISOString(),
+      });
+
     return NextResponse.json({
       success: true,
       signature: finalSignature,
-      message: `Successfully mixed ${actualTransferAmount / LAMPORTS_PER_SOL} SOL via Privacy Cash + MagicBlock TEE (sender hidden via ZK-SNARKs, delegated through TEE)`,
+      message: `Successfully mixed ${actualTransferAmount / LAMPORTS_PER_SOL} SOL via MagicBlock TEE delegation`,
     });
   } catch (error: any) {
     console.error('[Privacy Mixer] Error:', error);
