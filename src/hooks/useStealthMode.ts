@@ -118,6 +118,11 @@ export const useStealthMode = () => {
         return false;
       }
 
+      // Track protected transaction for privacy score
+      const protectedTxKey = `protected_tx_${publicKey.toBase58()}`;
+      const currentCount = parseInt(localStorage.getItem(protectedTxKey) || '0', 10);
+      localStorage.setItem(protectedTxKey, (currentCount + 1).toString());
+
       toast.success(
         `Stealth transfer complete! ${transfer.amount} SOL sent privately via Privacy Cash (ZK-SNARKs)`,
         { id: 'stealth-transfer', duration: 5000 }

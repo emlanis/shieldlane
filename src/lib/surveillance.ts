@@ -27,8 +27,10 @@ export class SurveillanceMonitor {
 
       const totalTransactions = signatures.length;
 
-      // Simulate privacy-protected transactions (in production, check Privacy Cash)
-      const protectedTransactions = 0; // Would query Privacy Cash pools
+      // Get protected transaction count from localStorage
+      // This tracks Stealth transfers (Privacy Cash) and Mixer transfers (MagicBlock TEE)
+      const protectedTxKey = `protected_tx_${walletAddress.toBase58()}`;
+      const protectedTransactions = parseInt(localStorage.getItem(protectedTxKey) || '0', 10);
 
       // Calculate exposure
       const exposedTransactions = totalTransactions - protectedTransactions;
