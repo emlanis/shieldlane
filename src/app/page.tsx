@@ -41,7 +41,7 @@ export default function Home() {
 
               {/* Description */}
               <p className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto">
-                A privacy-preserving wallet wrapper for high-value Solana users. Shield your transaction history and balances with zero-knowledge proofs.
+                Privacy-preserving wallet wrapper for Solana. Dual-layer protection combining zero-knowledge proofs and trusted execution environments.
               </p>
 
               {/* CTA Buttons */}
@@ -89,37 +89,48 @@ export default function Home() {
                 Privacy-First Features
               </h2>
 
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-4 gap-6">
                 {/* Feature 1 */}
                 <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl hover:border-amber-500/50 transition-all group">
                   <div className="w-12 h-12 bg-amber-400/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <span className="text-2xl">🔒</span>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Private Balance Viewing</h3>
-                  <p className="text-gray-400">
-                    Compare what surveillance tools see versus your actual balance. Shield your holdings in privacy pools.
+                  <h3 className="text-lg font-semibold mb-2">Privacy Cash</h3>
+                  <p className="text-sm text-gray-400">
+                    Shield your holdings in ZK-SNARK privacy pools. Compare public vs. private balances.
                   </p>
                 </div>
 
                 {/* Feature 2 */}
-                <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl hover:border-yellow-500/50 transition-all group">
-                  <div className="w-12 h-12 bg-yellow-400/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl hover:border-purple-500/50 transition-all group">
+                  <div className="w-12 h-12 bg-purple-400/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <span className="text-2xl">👻</span>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Stealth Mode Transfers</h3>
-                  <p className="text-gray-400">
-                    Two privacy modes: External (sender hidden) or Internal (everything hidden) using TEE technology.
+                  <h3 className="text-lg font-semibold mb-2">Stealth Mode</h3>
+                  <p className="text-sm text-gray-400">
+                    Hide sender identity with Groth16 ZK proofs. Fast privacy for everyday transfers.
                   </p>
                 </div>
 
                 {/* Feature 3 */}
-                <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl hover:border-green-500/50 transition-all group">
-                  <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl hover:border-yellow-500/50 transition-all group">
+                  <div className="w-12 h-12 bg-yellow-400/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span className="text-2xl">🔀</span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Mixer</h3>
+                  <p className="text-sm text-gray-400">
+                    Maximum privacy with MagicBlock TEE. Complete transaction confidentiality.
+                  </p>
+                </div>
+
+                {/* Feature 4 */}
+                <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl hover:border-blue-500/50 transition-all group">
+                  <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <span className="text-2xl">📊</span>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Surveillance Monitor</h3>
-                  <p className="text-gray-400">
-                    See what trackers can detect. Get privacy score and recommendations to improve your privacy posture.
+                  <h3 className="text-lg font-semibold mb-2">Monitor</h3>
+                  <p className="text-sm text-gray-400">
+                    View your privacy score and see what surveillance tools can detect about you.
                   </p>
                 </div>
               </div>
@@ -132,38 +143,38 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center space-y-8">
               <h2 className="text-3xl md:text-4xl font-bold">
-                Built with Cutting-Edge Privacy Technology
+                Two Privacy Layers. One Shield.
               </h2>
               <p className="text-xl text-gray-400">
-                Shieldlane combines multiple cryptographic primitives to provide military-grade privacy for your Solana transactions.
+                Shieldlane combines zero-knowledge proofs and trusted execution environments for comprehensive transaction privacy on Solana.
               </p>
 
               <div className="grid md:grid-cols-2 gap-6 pt-8">
                 <div className="p-6 bg-gradient-to-br from-purple-900/20 to-transparent border border-amber-500/20 rounded-xl">
-                  <h3 className="text-lg font-semibold mb-2">Privacy Cash SDK</h3>
+                  <h3 className="text-lg font-semibold mb-2">Light Protocol (Layer 1)</h3>
                   <p className="text-gray-400 text-sm">
-                    ZK-SNARK powered privacy pools that break the link between deposits and withdrawals.
+                    Groth16 ZK-SNARKs hide sender identity through compressed Merkle trees. Privacy Cash deposits break wallet linkage.
                   </p>
                 </div>
 
                 <div className="p-6 bg-gradient-to-br from-blue-900/20 to-transparent border border-yellow-500/20 rounded-xl">
-                  <h3 className="text-lg font-semibold mb-2">MagicBlock PERs</h3>
+                  <h3 className="text-lg font-semibold mb-2">MagicBlock TEE (Layer 2)</h3>
                   <p className="text-gray-400 text-sm">
-                    Private Ephemeral Rollups using TEE (Trusted Execution Environment) for confidential transfers.
+                    Intel TDX-based trusted execution for complete privacy. Account delegation ensures hardware-verified confidentiality.
                   </p>
                 </div>
 
                 <div className="p-6 bg-gradient-to-br from-green-900/20 to-transparent border border-green-500/20 rounded-xl">
-                  <h3 className="text-lg font-semibold mb-2">Helius RPC</h3>
+                  <h3 className="text-lg font-semibold mb-2">Non-Custodial</h3>
                   <p className="text-gray-400 text-sm">
-                    Enterprise-grade Solana RPC infrastructure for reliable and fast blockchain access.
+                    Your keys, your crypto. All privacy operations execute on-chain with cryptographic verification. No trust required.
                   </p>
                 </div>
 
                 <div className="p-6 bg-gradient-to-br from-orange-900/20 to-transparent border border-orange-500/20 rounded-xl">
-                  <h3 className="text-lg font-semibold mb-2">On-Chain Verification</h3>
+                  <h3 className="text-lg font-semibold mb-2">Solana Native</h3>
                   <p className="text-gray-400 text-sm">
-                    All privacy operations are verified on Solana blockchain. Trustless and transparent.
+                    Built specifically for Solana's high-performance architecture. Fast finality, low fees, enterprise RPC infrastructure.
                   </p>
                 </div>
               </div>
