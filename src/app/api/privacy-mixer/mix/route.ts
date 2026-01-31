@@ -202,10 +202,22 @@ export async function POST(request: NextRequest) {
 
     // Step 3: Transfer from ephemeral account to recipient (final transfer)
     console.log('[Privacy Mixer] Final transfer to recipient...');
+
+    // Check actual balance after delegation (fees were deducted)
+    const ephemeralBalance = await heliusConnection.getBalance(ephemeralAccount.publicKey);
+    const finalTransferFee = 5000; // Reserve for final transfer fee
+    const actualTransferAmount = ephemeralBalance - finalTransferFee;
+
+    console.log('[Privacy Mixer] Ephemeral balance after delegation:', {
+      balance: ephemeralBalance / LAMPORTS_PER_SOL,
+      feeReserve: finalTransferFee / LAMPORTS_PER_SOL,
+      actualTransfer: actualTransferAmount / LAMPORTS_PER_SOL,
+    });
+
     const transferToRecipient = SystemProgram.transfer({
       fromPubkey: ephemeralAccount.publicKey,
       toPubkey: recipientPubkey,
-      lamports: amount,
+      lamports: actualTransferAmount,
     });
 
     let tx3 = new Transaction().add(transferToRecipient);
@@ -228,7 +240,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       signature: finalSignature,
-      message: `Successfully mixed ${amount / LAMPORTS_PER_SOL} SOL via Privacy Cash + MagicBlock TEE (sender hidden via ZK-SNARKs, delegated through TEE)`,
+      message: `Successfully mixed ${actualTransferAmount / LAMPORTS_PER_SOL} SOL via Privacy Cash + MagicBlock TEE (sender hidden via ZK-SNARKs, delegated through TEE)`,
     });
   } catch (error: any) {
     console.error('[Privacy Mixer] Error:', error);
