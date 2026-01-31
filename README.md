@@ -2,7 +2,7 @@
 
 **Your transactions. Your business. Your Shieldlane.**
 
-A privacy-preserving wallet wrapper for high-value Solana users (whales, DAOs, traders) built for the **Privacy Hack 2026** hackathon.
+A privacy-preserving wallet wrapper for high-value Solana users (whales, DAOs, traders).
 
 ## 🎯 Overview
 
@@ -15,18 +15,6 @@ Shieldlane is a comprehensive privacy solution that shields transaction history 
 - **🔀 Privacy Mixer**: Maximum privacy combining Privacy Cash + MagicBlock TEE for complete transaction confidentiality
 - **📊 Surveillance Monitor**: Real-time analysis of what trackers can detect about your wallet with privacy score
 - **📚 Educational Content**: Learn about wallet surveillance and privacy-enhancing technologies
-
-## 🏆 Target Bounties
-
-This project is optimized for the following bounties:
-
-1. **Privacy Cash SDK** ($6k Best Overall) - Whale wallet privacy use case
-2. **MagicBlock** ($10k Grand Prize) - TEE privacy for confidential transfers
-3. **Track 01: Private Payments** ($15k) - Main hackathon track
-4. **Helius RPC** ($5k) - RPC infrastructure integration
-5. **Encrypt.trade** ($500) - Educational component about wallet surveillance
-
-**Total Potential: $36,500+**
 
 ## 🚀 Quick Start
 
@@ -112,6 +100,7 @@ shieldlane/
 │   │   │   ├── page.tsx          # Landing page
 │   │   │   ├── dashboard/        # Main dashboard
 │   │   │   ├── stealth/          # Stealth mode transfers
+│   │   │   ├── mixer/            # Privacy Mixer
 │   │   │   ├── monitor/          # Surveillance monitor
 │   │   │   └── learn/            # Educational content
 │   │   ├── components/           # React components
@@ -171,7 +160,6 @@ Analyzes:
 The Privacy Mixer integrates MagicBlock TEE to provide hardware-level privacy:
 
 - **TEE Delegation**: Delegate Privacy Cash accounts to MagicBlock's Intel TDX secure enclaves
-- **Multi-Hop Mixing**: 3-5 randomized hops through ephemeral accounts inside TEE
 - **Hardware Attestation**: Cryptographic proof of correct execution in secure enclave
 - **Complete Privacy**: Sender, amount, recipient, and transaction patterns all hidden
 - **Dual-Layer Security**: Combines Privacy Cash ZK-SNARKs with MagicBlock TEE
@@ -179,9 +167,8 @@ The Privacy Mixer integrates MagicBlock TEE to provide hardware-level privacy:
 **Implementation Status:**
 - ✅ MagicBlock SDK integrated (`@magicblock-labs/ephemeral-rollups-sdk`)
 - ✅ Privacy Mixer implemented with ephemeral account delegation
-- ✅ Multi-hop transfers execute inside TEE secure enclaves
 - ✅ Server-side mixing protects ephemeral keypairs
-- ✅ Real-time progress tracking for mixing hops
+- ✅ Real-time progress tracking for privacy operations
 
 ## 📊 Surveillance Detection
 
@@ -206,26 +193,6 @@ The `/learn` page covers:
 - **Helius RPC**: https://www.helius.dev/
 - **Solana Explorer**: https://explorer.solana.com/?cluster=devnet
 
-## 🏁 Hackathon Checklist
-
-- [x] All code is open source
-- [x] Deployed to Solana devnet
-- [x] Documentation complete
-- [x] Privacy Cash integration
-- [x] MagicBlock SDK integration
-- [x] Helius RPC configuration
-- [x] Educational content
-- [ ] Demo video (max 3 min)
-- [ ] Submit before Feb 1, 2026
-
-## 📝 Demo Video Script
-
-**0:00-0:30 - Problem**: Show whale wallet exposure on explorer
-**0:30-1:00 - Solution**: Introduce Shieldlane dashboard
-**1:00-2:00 - Demo**: Execute stealth transfer, show hidden data
-**2:00-2:30 - Technical**: Explain cryptographic primitives
-**2:30-3:00 - CTA**: Privacy is choice, try on devnet
-
 ## 📄 License
 
 MIT License - Open Source
@@ -235,10 +202,9 @@ MIT License - Open Source
 - Privacy Cash team for ZK-SNARK technology
 - MagicBlock for TEE privacy technology
 - Helius for RPC infrastructure
-- Privacy Hack 2026 organizers
 
 ---
 
-**Built by emlanis with ❤️ for Privacy Hack 2026**
+**Built by emlanis with ❤️**
 
 *Your transactions. Your business. Your Shieldlane.* 🛡️
