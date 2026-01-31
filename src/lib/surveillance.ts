@@ -20,21 +20,40 @@ export class SurveillanceMonitor {
    */
   async analyzeSurveillance(walletAddress: PublicKey): Promise<SurveillanceData> {
     try {
-      // Get transaction history
-      const signatures = await this.connection.getSignaturesForAddress(walletAddress, {
-        limit: 100,
-      });
+      // Get protected transaction counts from localStorage
+      // Stealth transfers (Privacy Cash ZK-SNARKs)
+      const stealthTxKey = `stealth_tx_${walletAddress.toBase58()}`;
+      const stealthTransactions = parseInt(localStorage.getItem(stealthTxKey) || '0', 10);
 
-      const totalTransactions = signatures.length;
+      // Mixer transfers (MagicBlock TEE)
+      const mixerTxKey = `mixer_tx_${walletAddress.toBase58()}`;
+      const mixerTransactions = parseInt(localStorage.getItem(mixerTxKey) || '0', 10);
 
-      // Get protected transaction count from localStorage
-      // This tracks Stealth transfers (Privacy Cash) and Mixer transfers (MagicBlock TEE)
-      const protectedTxKey = `protected_tx_${walletAddress.toBase58()}`;
-      const protectedTransactions = parseInt(localStorage.getItem(protectedTxKey) || '0', 10);
+      // Total protected transactions
+      const protectedTransactions = stealthTransactions + mixerTransactions;
 
-      // Calculate exposure
-      const exposedTransactions = totalTransactions - protectedTransactions;
-      const exposureRatio = totalTransactions > 0 ? exposedTransactions / totalTransactions : 1;
+      // Exposed transactions are tracked separately (public transfers without privacy)
+      // Note: We can't derive this from totalTransactions - protectedTransactions because
+      // protected transactions also appear on-chain (they're just privacy-enhanced)
+      const exposedTxKey = `exposed_tx_${walletAddress.toBase58()}`;
+      let exposedTransactions = parseInt(localStorage.getItem(exposedTxKey) || '0', 10);
+
+      // Initialize exposed transactions for first-time users
+      // If no counters exist yet, assume all historical on-chain txs are exposed
+      const initializedKey = `surveillance_initialized_${walletAddress.toBase58()}`;
+      if (!localStorage.getItem(initializedKey)) {
+        const signatures = await this.connection.getSignaturesForAddress(walletAddress, {
+          limit: 100,
+        });
+        // All historical transactions are considered exposed since they weren't protected by Shieldlane
+        exposedTransactions = signatures.length;
+        localStorage.setItem(exposedTxKey, exposedTransactions.toString());
+        localStorage.setItem(initializedKey, 'true');
+      }
+
+      // Calculate exposure ratio
+      const totalPrivacyActivity = exposedTransactions + protectedTransactions;
+      const exposureRatio = totalPrivacyActivity > 0 ? exposedTransactions / totalPrivacyActivity : 1;
 
       // Determine tracking risk
       let trackingRisk: 'low' | 'medium' | 'high';
@@ -89,10 +108,18 @@ export class SurveillanceMonitor {
       );
 
       const exposedDataPoints = this.identifyExposedData(surveillance);
+
+      // Get individual transaction counts for accurate descriptions
+      const stealthTxKey = `stealth_tx_${walletAddress.toBase58()}`;
+      const stealthTxCount = parseInt(localStorage.getItem(stealthTxKey) || '0', 10);
+      const mixerTxKey = `mixer_tx_${walletAddress.toBase58()}`;
+      const mixerTxCount = parseInt(localStorage.getItem(mixerTxKey) || '0', 10);
+
       const protectedDataPoints = this.identifyProtectedData(
         privacyCashCoverage > 0,
         usesMagicBlockMixer,
-        surveillance.protectedTransactions
+        stealthTxCount,
+        mixerTxCount
       );
 
       return {
@@ -181,7 +208,8 @@ export class SurveillanceMonitor {
   private identifyProtectedData(
     hasPrivateBalance: boolean,
     usesMagicBlockMixer: boolean,
-    protectedTxCount: number
+    stealthTxCount: number,
+    mixerTxCount: number
   ): string[] {
     const protectedData: string[] = [];
 
@@ -195,8 +223,17 @@ export class SurveillanceMonitor {
       protectedData.push('TEE execution hides transaction patterns');
     }
 
-    if (protectedTxCount > 0) {
-      protectedData.push(`${protectedTxCount} transactions protected with ZK proofs`);
+    // Stealth transfers (Privacy Cash ZK-SNARKs)
+    if (stealthTxCount > 0) {
+      protectedData.push(`${stealthTxCount} transaction${stealthTxCount > 1 ? 's' : ''} protected with ZK proofs`);
+    }
+
+    // Mixer transfers (MagicBlock TEE)
+    if (mixerTxCount > 0) {
+      protectedData.push(`${mixerTxCount} transaction${mixerTxCount > 1 ? 's' : ''} secured with MagicBlock TEE`);
+    }
+
+    if (stealthTxCount > 0 || mixerTxCount > 0) {
       protectedData.push('Deposit-withdrawal links are broken');
       protectedData.push('Anonymity set provides plausible deniability');
     }

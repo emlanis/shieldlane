@@ -107,10 +107,10 @@ export function usePrivacyMixer() {
       const mixerUsageKey = `mixer_used_${publicKey.toBase58()}`;
       localStorage.setItem(mixerUsageKey, 'true');
 
-      // Track protected transaction for privacy score
-      const protectedTxKey = `protected_tx_${publicKey.toBase58()}`;
-      const currentCount = parseInt(localStorage.getItem(protectedTxKey) || '0', 10);
-      localStorage.setItem(protectedTxKey, (currentCount + 1).toString());
+      // Track mixer transaction for privacy score (MagicBlock TEE)
+      const mixerTxKey = `mixer_tx_${publicKey.toBase58()}`;
+      const currentCount = parseInt(localStorage.getItem(mixerTxKey) || '0', 10);
+      localStorage.setItem(mixerTxKey, (currentCount + 1).toString());
 
       toast.success('Mix completed! Transaction secured via MagicBlock TEE');
       setLoading(false);
