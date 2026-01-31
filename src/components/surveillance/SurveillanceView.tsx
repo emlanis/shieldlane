@@ -105,24 +105,6 @@ export const SurveillanceView: FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Recommendations */}
-      {data.recommendations.length > 0 && (
-        <div className="p-6 bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-amber-500/30 rounded-xl">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span>💡</span>
-            Recommendations
-          </h3>
-          <div className="space-y-3">
-            {data.recommendations.map((rec, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 bg-zinc-950/50 rounded-lg">
-                <span className="text-amber-500 mt-0.5">→</span>
-                <span className="text-sm text-gray-300">{rec}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

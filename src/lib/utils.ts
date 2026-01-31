@@ -38,25 +38,24 @@ export const calculatePercentage = (value: number, total: number): number => {
 export const calculatePrivacyScore = (
   protectedTransactions: number,
   totalTransactions: number,
-  hasPrivateBalance: boolean,
-  usesStealthMode: boolean
+  privacyCashCoverage: number, // 0-100 percentage of balance in Privacy Cash
+  usesMagicBlockMixer: boolean
 ): number => {
   let score = 0;
 
-  // Base score from transaction privacy (60% weight)
+  // Base score from transaction privacy (20% weight)
   if (totalTransactions > 0) {
     const privacyRatio = protectedTransactions / totalTransactions;
-    score += privacyRatio * 60;
+    score += privacyRatio * 20;
   }
 
-  // Balance privacy (20% weight)
-  if (hasPrivateBalance) {
-    score += 20;
-  }
+  // Privacy Cash coverage (0-50 points based on percentage of balance protected)
+  // The more SOL in Privacy Cash, the higher the score
+  score += (privacyCashCoverage / 100) * 50;
 
-  // Stealth mode usage (20% weight)
-  if (usesStealthMode) {
-    score += 20;
+  // MagicBlock Mixer usage (30% weight) - most powerful privacy layer
+  if (usesMagicBlockMixer) {
+    score += 30;
   }
 
   return Math.min(100, Math.round(score));

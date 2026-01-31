@@ -103,6 +103,10 @@ export function usePrivacyMixer() {
         txSignature: mixData.signature,
       });
 
+      // Mark that this wallet has used MagicBlock Mixer (for privacy score)
+      const mixerUsageKey = `mixer_used_${publicKey.toBase58()}`;
+      localStorage.setItem(mixerUsageKey, 'true');
+
       toast.success('Mix completed! Transaction secured via MagicBlock TEE');
       setLoading(false);
       return true;

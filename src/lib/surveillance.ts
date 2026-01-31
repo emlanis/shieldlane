@@ -73,8 +73,8 @@ export class SurveillanceMonitor {
    */
   async calculatePrivacyScore(
     walletAddress: PublicKey,
-    hasPrivateBalance: boolean = false,
-    usesStealthMode: boolean = false
+    privacyCashCoverage: number = 0, // 0-100 percentage
+    usesMagicBlockMixer: boolean = false
   ): Promise<PrivacyScore> {
     try {
       const surveillance = await this.analyzeSurveillance(walletAddress);
@@ -82,14 +82,14 @@ export class SurveillanceMonitor {
       const score = calculatePrivacyScore(
         surveillance.protectedTransactions,
         surveillance.exposedTransactions + surveillance.protectedTransactions,
-        hasPrivateBalance,
-        usesStealthMode
+        privacyCashCoverage,
+        usesMagicBlockMixer
       );
 
       const exposedDataPoints = this.identifyExposedData(surveillance);
       const protectedDataPoints = this.identifyProtectedData(
-        hasPrivateBalance,
-        usesStealthMode,
+        privacyCashCoverage > 0,
+        usesMagicBlockMixer,
         surveillance.protectedTransactions
       );
 
@@ -97,7 +97,11 @@ export class SurveillanceMonitor {
         score,
         exposedDataPoints,
         protectedDataPoints,
-        recommendations: surveillance.recommendations,
+        recommendations: this.generateEnhancedRecommendations(
+          privacyCashCoverage,
+          usesMagicBlockMixer,
+          surveillance.trackingRisk
+        ),
       };
     } catch (error) {
       console.error('Error calculating privacy score:', error);
@@ -174,7 +178,7 @@ export class SurveillanceMonitor {
    */
   private identifyProtectedData(
     hasPrivateBalance: boolean,
-    usesStealthMode: boolean,
+    usesMagicBlockMixer: boolean,
     protectedTxCount: number
   ): string[] {
     const protectedData: string[] = [];
@@ -184,9 +188,9 @@ export class SurveillanceMonitor {
       protectedData.push('True holdings are obfuscated');
     }
 
-    if (usesStealthMode) {
-      protectedData.push('Stealth mode transfers hide sender identity');
-      protectedData.push('Transaction amounts encrypted with Bulletproofs');
+    if (usesMagicBlockMixer) {
+      protectedData.push('MagicBlock TEE Mixer adds untraceable layer');
+      protectedData.push('TEE execution hides transaction patterns');
     }
 
     if (protectedTxCount > 0) {
@@ -196,6 +200,44 @@ export class SurveillanceMonitor {
     }
 
     return protectedData;
+  }
+
+  /**
+   * Generate enhanced privacy recommendations
+   */
+  private generateEnhancedRecommendations(
+    privacyCashCoverage: number,
+    usesMagicBlockMixer: boolean,
+    risk: 'low' | 'medium' | 'high'
+  ): string[] {
+    const recommendations: string[] = [];
+
+    // Privacy Cash recommendations
+    if (privacyCashCoverage === 0) {
+      recommendations.push('Start by depositing to Privacy Cash pool');
+    } else if (privacyCashCoverage < 50) {
+      recommendations.push(`Increase Privacy Cash coverage (currently ${privacyCashCoverage.toFixed(0)}%)`);
+    }
+
+    // MagicBlock Mixer recommendations
+    if (!usesMagicBlockMixer) {
+      recommendations.push('Use MagicBlock Mixer for maximum privacy and untraceable transfers');
+    }
+
+    // Risk-based recommendations
+    if (risk === 'high') {
+      recommendations.push('Immediately increase privacy protection - your activity is highly exposed');
+      recommendations.push('Consider creating a new wallet for sensitive operations');
+    } else if (risk === 'medium') {
+      recommendations.push('Use Stealth Mode for all future transactions');
+    }
+
+    if (recommendations.length === 0) {
+      recommendations.push('Continue using privacy features regularly');
+      recommendations.push('Monitor your privacy score monthly');
+    }
+
+    return recommendations;
   }
 }
 

@@ -21,13 +21,27 @@ export const usePrivacyScore = () => {
     setLoading(true);
 
     try {
-      // Check if user has Privacy Cash balance (actual privacy protection)
-      const hasPrivateBalance = balance.privacyCashBalance > 0;
+      // Calculate Privacy Cash coverage as percentage of total balance
+      const totalBalance = balance.totalBalance;
+      const privacyCashCoverage = totalBalance > 0
+        ? (balance.privacyCashBalance / totalBalance) * 100
+        : 0;
+
+      // Check if user has used MagicBlock Mixer (check localStorage for mixer usage)
+      const mixerUsageKey = `mixer_used_${publicKey.toBase58()}`;
+      const usesMagicBlockMixer = localStorage.getItem(mixerUsageKey) === 'true';
+
+      console.log('[Privacy Score] Calculating with:', {
+        privacyCashCoverage: privacyCashCoverage.toFixed(2) + '%',
+        usesMagicBlockMixer,
+        totalBalance,
+        privacyCashBalance: balance.privacyCashBalance,
+      });
 
       const privacyScore = await surveillanceMonitor.calculatePrivacyScore(
         publicKey,
-        hasPrivateBalance,
-        false // Stealth mode tracking not implemented yet
+        privacyCashCoverage,
+        usesMagicBlockMixer
       );
 
       setScore(privacyScore);
@@ -40,7 +54,7 @@ export const usePrivacyScore = () => {
 
   useEffect(() => {
     calculate();
-  }, [publicKey, balance.privacyCashBalance]);
+  }, [publicKey, balance.privacyCashBalance, balance.totalBalance]);
 
   return {
     score,
