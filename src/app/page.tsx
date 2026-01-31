@@ -172,9 +172,9 @@ export default function Home() {
                 </div>
 
                 <div className="p-6 bg-gradient-to-br from-orange-900/20 to-transparent border border-orange-500/20 rounded-xl">
-                  <h3 className="text-lg font-semibold mb-2">Solana Native</h3>
+                  <h3 className="text-lg font-semibold mb-2">Helius RPC</h3>
                   <p className="text-gray-400 text-sm">
-                    Built specifically for Solana's high-performance architecture. Fast finality, low fees, enterprise RPC infrastructure.
+                    Enterprise-grade Solana RPC infrastructure. Fast finality, reliable data feeds, optimized for high-performance privacy operations.
                   </p>
                 </div>
               </div>
