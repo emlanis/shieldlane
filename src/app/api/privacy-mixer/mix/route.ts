@@ -138,15 +138,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Privacy Mixer instance with MagicBlock TEE integration
-    const magicblockRpc = process.env.NEXT_PUBLIC_MAGICBLOCK_RPC || 'https://devnet-router.magicblock.app';
     const mixer = createPrivacyMixer(
       heliusRpcUrl,
-      magicblockRpc,
       {
         minHops: 3,
         maxHops: 5,
-        minDelayMs: 2000,
-        maxDelayMs: 8000,
+        hopDelayMs: 2000,
         minAmount: 0.01 * LAMPORTS_PER_SOL,
       }
     );
