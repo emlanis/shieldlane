@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { surveillanceMonitor } from '@/lib/surveillance';
-import { usePrivacyStore } from '@/store/privacy-store';
+import { usePrivateBalance } from './usePrivateBalance';
 import { PrivacyScore } from '@/types';
 
 export const usePrivacyScore = () => {
   const { publicKey } = useWallet();
-  const { isPrivacyEnabled, currentMode } = usePrivacyStore();
+  const { balance } = usePrivateBalance();
   const [score, setScore] = useState<PrivacyScore | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,10 +21,13 @@ export const usePrivacyScore = () => {
     setLoading(true);
 
     try {
+      // Check if user has Privacy Cash balance (actual privacy protection)
+      const hasPrivateBalance = balance.privacyCashBalance > 0;
+
       const privacyScore = await surveillanceMonitor.calculatePrivacyScore(
         publicKey,
-        isPrivacyEnabled,
-        currentMode === 'internal'
+        hasPrivateBalance,
+        false // Stealth mode tracking not implemented yet
       );
 
       setScore(privacyScore);
@@ -37,7 +40,7 @@ export const usePrivacyScore = () => {
 
   useEffect(() => {
     calculate();
-  }, [publicKey, isPrivacyEnabled, currentMode]);
+  }, [publicKey, balance.privacyCashBalance]);
 
   return {
     score,

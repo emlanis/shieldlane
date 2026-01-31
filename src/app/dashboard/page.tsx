@@ -63,11 +63,29 @@ export default function DashboardPage() {
             </Link>
 
             <Link
-              href="/monitor"
-              className="p-6 bg-gradient-to-br from-blue-900/20 to-transparent border border-yellow-500/30 rounded-xl hover:border-yellow-500/50 transition-all group"
+              href="/mixer"
+              className="p-6 bg-gradient-to-br from-yellow-900/20 to-transparent border border-yellow-500/30 rounded-xl hover:border-yellow-500/50 transition-all group"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-yellow-400/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span className="text-xl">🔀</span>
+                </div>
+                <h3 className="text-lg font-semibold">Mixer</h3>
+              </div>
+              <p className="text-sm text-gray-400 mb-3">
+                Maximum privacy through MagicBlock TEE delegation
+              </p>
+              <div className="text-sm text-yellow-400 font-medium">
+                Execute Mix →
+              </div>
+            </Link>
+
+            <Link
+              href="/monitor"
+              className="p-6 bg-gradient-to-br from-blue-900/20 to-transparent border border-blue-500/30 rounded-xl hover:border-blue-500/50 transition-all group"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-blue-400/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                   <span className="text-xl">📊</span>
                 </div>
                 <h3 className="text-lg font-semibold">Monitor</h3>
@@ -75,7 +93,7 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-400 mb-3">
                 See what surveillance tools can detect about you
               </p>
-              <div className="text-sm text-yellow-400 font-medium">
+              <div className="text-sm text-blue-400 font-medium">
                 View Analysis →
               </div>
             </Link>

@@ -44,6 +44,11 @@ export const Footer: FC = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/mixer" className="text-sm text-gray-400 hover:text-white transition-colors">
+                  Mixer
+                </Link>
+              </li>
+              <li>
                 <Link href="/monitor" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Privacy Monitor
                 </Link>
