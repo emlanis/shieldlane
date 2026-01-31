@@ -2,11 +2,10 @@
 
 import { FC, useState } from 'react';
 import { useStealthMode } from '@/hooks/useStealthMode';
-import { PrivacyMode } from '@/types';
 import { isValidPublicKey } from '@/lib/solana';
 
 export const StealthTransfer: FC = () => {
-  const { currentMode, loading, executeTransfer, switchMode } = useStealthMode();
+  const { loading, executeTransfer } = useStealthMode();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
@@ -19,7 +18,7 @@ export const StealthTransfer: FC = () => {
     const success = await executeTransfer({
       recipient,
       amount: parseFloat(amount),
-      mode: currentMode,
+      mode: 'external', // Always use external (Privacy Cash)
       memo: memo || undefined,
     });
 
@@ -35,55 +34,6 @@ export const StealthTransfer: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Mode Selection */}
-      <div>
-        <h3 className="text-lg font-semibold mb-3">Privacy Mode</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => switchMode('external')}
-            className={`p-4 rounded-xl border-2 transition-all ${
-              currentMode === 'external'
-                ? 'border-amber-500 bg-amber-400/10'
-                : 'border-zinc-900 bg-zinc-950 hover:border-zinc-800'
-            }`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">👻</span>
-              <span className="font-semibold">External</span>
-            </div>
-            <p className="text-xs text-gray-400">
-              Sender hidden, amount & recipient visible
-            </p>
-            <div className="mt-2 flex gap-1">
-              <div className="h-1 w-full bg-amber-400 rounded" />
-              <div className="h-1 w-full bg-zinc-700 rounded" />
-              <div className="h-1 w-full bg-zinc-700 rounded" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => switchMode('internal')}
-            className={`p-4 rounded-xl border-2 transition-all ${
-              currentMode === 'internal'
-                ? 'border-yellow-500 bg-yellow-400/10'
-                : 'border-zinc-900 bg-zinc-950 hover:border-zinc-800'
-            }`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">🔒</span>
-              <span className="font-semibold">Internal</span>
-            </div>
-            <p className="text-xs text-gray-400">
-              Everything hidden - maximum privacy
-            </p>
-            <div className="mt-2 flex gap-1">
-              <div className="h-1 w-full bg-yellow-400 rounded" />
-              <div className="h-1 w-full bg-yellow-400 rounded" />
-              <div className="h-1 w-full bg-yellow-400 rounded" />
-            </div>
-          </button>
-        </div>
-      </div>
 
       {/* Transfer Form */}
       <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl space-y-4">
@@ -110,16 +60,9 @@ export const StealthTransfer: FC = () => {
 
         {/* Amount */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-gray-400">
-              Amount (SOL)
-            </label>
-            {currentMode === 'internal' && (
-              <span className="text-xs text-yellow-400 flex items-center gap-1">
-                🔒 Encrypted
-              </span>
-            )}
-          </div>
+          <label className="block text-sm font-medium text-gray-400 mb-2">
+            Amount (SOL)
+          </label>
           <div className="relative">
             <input
               type="number"
@@ -161,13 +104,9 @@ export const StealthTransfer: FC = () => {
           <div className="flex items-start gap-3">
             <span className="text-lg">🛡️</span>
             <div className="text-sm space-y-1">
-              <p className="font-medium text-purple-300">
-                {currentMode === 'external' ? 'External Mode Active' : 'Internal Mode Active'}
-              </p>
+              <p className="font-medium text-purple-300">Stealth Transfer Active</p>
               <p className="text-gray-400">
-                {currentMode === 'external'
-                  ? 'Your identity will be hidden using Groth16 ZK proofs (Privacy Cash). Amount and recipient are visible on-chain.'
-                  : 'Full privacy using MagicBlock TEE (Intel TDX secure enclaves). Sender, amount, and recipient are all hidden.'}
+                Your identity will be hidden using Groth16 ZK proofs (Privacy Cash). Amount and recipient are visible on-chain.
               </p>
             </div>
           </div>
@@ -185,7 +124,7 @@ export const StealthTransfer: FC = () => {
               Executing Transfer...
             </span>
           ) : (
-            `Execute ${currentMode === 'external' ? 'External' : 'Internal'} Transfer`
+            'Execute Stealth Transfer'
           )}
         </button>
       </div>
@@ -199,12 +138,12 @@ export const StealthTransfer: FC = () => {
             <span className="text-gray-400">Groth16 ZK Proofs</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-yellow-400 rounded-full" />
-            <span className="text-gray-400">Intel TDX TEE</span>
+            <span className="w-2 h-2 bg-purple-400 rounded-full" />
+            <span className="text-gray-400">ZK-SNARKs</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-green-500 rounded-full" />
-            <span className="text-gray-400">Ephemeral Rollups</span>
+            <span className="text-gray-400">Privacy Pool</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-orange-500 rounded-full" />
