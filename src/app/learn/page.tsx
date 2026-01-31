@@ -165,30 +165,40 @@ export default function LearnPage() {
               <div className="p-6 bg-gradient-to-br from-purple-900/20 to-transparent border border-amber-500/30 rounded-xl">
                 <h4 className="font-semibold text-amber-400 mb-3 text-lg flex items-center gap-2">
                   <span>🔮</span>
-                  ZK-SNARKs (Privacy Cash)
+                  Layer 1: ZK-SNARKs (Privacy Cash)
                 </h4>
                 <p className="text-sm text-gray-400 mb-4">
-                  Zero-Knowledge Succinct Non-Interactive Arguments of Knowledge allow you to prove you
-                  have the right to withdraw funds without revealing which deposit is yours.
+                  Zero-Knowledge Succinct Non-Interactive Arguments of Knowledge (Groth16) hide your
+                  sender identity while keeping amounts and recipients visible. Used in Stealth Mode.
                 </p>
                 <div className="p-4 bg-zinc-950 rounded-lg space-y-3">
                   <div className="flex items-start gap-3">
                     <span className="text-amber-500 mt-1">✓</span>
                     <div>
-                      <strong className="text-sm text-gray-300">Deposit:</strong>
+                      <strong className="text-sm text-gray-300">Deposit to Privacy Cash:</strong>
                       <p className="text-xs text-gray-400 mt-1">
-                        Your deposit generates a commitment added to a Merkle tree. Nobody can link this
-                        to your identity.
+                        Your deposit generates a cryptographic commitment added to a Merkle tree (Light
+                        Protocol). This breaks the link to your wallet.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="text-amber-500 mt-1">✓</span>
                     <div>
-                      <strong className="text-sm text-gray-300">Withdraw:</strong>
+                      <strong className="text-sm text-gray-300">Stealth Transfer:</strong>
                       <p className="text-xs text-gray-400 mt-1">
-                        You prove knowledge of a commitment in the tree without revealing which one,
-                        breaking the link to your deposit.
+                        You prove ownership of a commitment without revealing which one, hiding your
+                        identity. Amount and recipient are visible for compliance.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-purple-500 mt-1">ℹ️</span>
+                    <div>
+                      <strong className="text-sm text-gray-300">Privacy Level:</strong>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Sender hidden, amount/recipient visible. Great for private withdrawals to
+                        exchanges or wallets.
                       </p>
                     </div>
                   </div>
@@ -198,28 +208,40 @@ export default function LearnPage() {
               <div className="p-6 bg-gradient-to-br from-blue-900/20 to-transparent border border-yellow-500/30 rounded-xl">
                 <h4 className="font-semibold text-yellow-400 mb-3 text-lg flex items-center gap-2">
                   <span>🎯</span>
-                  TEE (Trusted Execution Environment)
+                  Layer 2: TEE (Trusted Execution Environment)
                 </h4>
                 <p className="text-sm text-gray-400 mb-4">
-                  Hardware-based secure enclaves (Intel TDX) that execute transactions in isolation,
-                  protecting data from the operating system and other applications.
+                  Hardware-based secure enclaves (Intel TDX via MagicBlock) add an untraceable layer on
+                  top of Privacy Cash. Used in the Mixer for maximum privacy.
                 </p>
                 <div className="p-4 bg-zinc-950 rounded-lg space-y-3">
                   <div className="flex items-start gap-3">
                     <span className="text-yellow-500 mt-1">✓</span>
                     <div>
-                      <strong className="text-sm text-gray-300">Private Ephemeral Rollups:</strong>
+                      <strong className="text-sm text-gray-300">TEE Delegation:</strong>
                       <p className="text-xs text-gray-400 mt-1">
-                        MagicBlock PERs enable confidential transactions within secure enclaves
+                        Your Privacy Cash account is delegated to MagicBlock's TEE for confidential
+                        execution. Only the TEE can see transaction details.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="text-yellow-500 mt-1">✓</span>
                     <div>
-                      <strong className="text-sm text-gray-300">Account Delegation:</strong>
+                      <strong className="text-sm text-gray-300">Privacy Mixer:</strong>
                       <p className="text-xs text-gray-400 mt-1">
-                        Temporarily delegate accounts to Ephemeral Rollup for private execution
+                        Combines Privacy Cash (ZK sender anonymity) with TEE delegation for complete
+                        transaction privacy and pattern obfuscation.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-blue-500 mt-1">ℹ️</span>
+                    <div>
+                      <strong className="text-sm text-gray-300">Privacy Level:</strong>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Maximum privacy - sender, amount, recipient, and patterns all hidden. Hardware
+                        attestation proves correct execution.
                       </p>
                     </div>
                   </div>
@@ -229,33 +251,61 @@ export default function LearnPage() {
               <div className="p-6 bg-zinc-950 rounded-xl">
                 <h4 className="font-semibold text-green-400 mb-3 flex items-center gap-2">
                   <span>🔒</span>
-                  MagicBlock Auth
+                  Light Protocol (ZK Compression)
                 </h4>
-                <p className="text-sm text-gray-400">
-                  TEE RPC integrity verification and authentication tokens ensure secure communication
-                  with Private Ephemeral Rollups. Combines hardware attestation with cryptographic proofs.
+                <p className="text-sm text-gray-400 mb-3">
+                  Privacy Cash is built on Light Protocol's compressed Merkle trees using Groth16 ZK
+                  proofs. Your deposits generate commitments stored on-chain, and withdrawals prove
+                  ownership without revealing which commitment.
+                </p>
+                <p className="text-xs text-gray-400">
+                  This creates a privacy pool where withdrawal origin is mathematically hidden - the
+                  larger the pool, the stronger your anonymity set.
                 </p>
               </div>
 
               <div className="p-6 bg-zinc-950 rounded-xl">
                 <h4 className="font-semibold text-orange-400 mb-3 flex items-center gap-2">
                   <span>🔐</span>
-                  Light Protocol Merkle Trees
+                  MagicBlock TEE Infrastructure
                 </h4>
-                <p className="text-sm text-gray-400">
-                  Privacy Cash uses compressed Merkle trees for ZK-SNARK commitments and nullifiers,
-                  breaking the on-chain link between deposits and withdrawals with cryptographic guarantees.
+                <p className="text-sm text-gray-400 mb-3">
+                  MagicBlock provides Intel TDX-based Trusted Execution Environments on Solana. The
+                  Mixer delegates your Privacy Cash account to a TEE, where transactions execute in
+                  complete isolation.
+                </p>
+                <p className="text-xs text-gray-400">
+                  Hardware attestation proves the TEE is running correct code, and the enclave ensures
+                  even the cloud provider can't see your transaction details.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="p-6 bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-purple-900/20 border border-amber-500/30 rounded-xl">
-            <h4 className="font-semibold mb-3">🎓 The Result</h4>
-            <p className="text-sm text-gray-300">
-              By combining these technologies, Shieldlane provides military-grade privacy while
-              maintaining the verifiability and trustlessness that makes blockchain valuable. Everything
-              is verified on-chain - no centralized party required.
+            <h4 className="font-semibold mb-3">🎓 Dual-Layer Privacy Architecture</h4>
+            <p className="text-sm text-gray-300 mb-3">
+              Shieldlane offers two complementary privacy layers you can use separately or together:
+            </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-2">
+                <span className="text-purple-400">•</span>
+                <span className="text-gray-300">
+                  <strong>Privacy Cash (Layer 1):</strong> ZK-SNARKs hide sender identity. Fast,
+                  efficient, great for most use cases.
+                </span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-blue-400">•</span>
+                <span className="text-gray-300">
+                  <strong>Mixer (Layer 1 + 2):</strong> Combines Privacy Cash with MagicBlock TEE for
+                  maximum privacy. Hardware-guaranteed confidentiality.
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-4">
+              Both layers are non-custodial, trustless, and verifiable on-chain. You maintain full
+              control of your funds at all times.
             </p>
           </div>
         </div>
@@ -299,20 +349,36 @@ export default function LearnPage() {
                   <div className="flex items-start gap-3">
                     <span className="text-amber-500 mt-1">3.</span>
                     <div>
-                      <strong className="text-sm text-gray-300">Use Stealth Mode Regularly</strong>
+                      <strong className="text-sm text-gray-300">
+                        Choose the Right Privacy Level
+                      </strong>
                       <p className="text-xs text-gray-400 mt-1">
-                        Make privacy the default, not the exception. Regular use of privacy features
-                        creates a larger anonymity set.
+                        Use <strong>Stealth Mode</strong> (Privacy Cash ZK) for everyday private
+                        transfers. Use <strong>Mixer</strong> (Privacy Cash + MagicBlock TEE) for
+                        maximum privacy when complete anonymity is critical.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="text-amber-500 mt-1">4.</span>
                     <div>
-                      <strong className="text-sm text-gray-300">Wait Before Withdrawing</strong>
+                      <strong className="text-sm text-gray-300">Grow Your Anonymity Set</strong>
                       <p className="text-xs text-gray-400 mt-1">
-                        Don't withdraw immediately after depositing. Wait for more deposits from others to
-                        increase your anonymity set.
+                        Don't withdraw immediately after depositing to Privacy Cash. Wait for more
+                        deposits from others to increase your anonymity set - making your withdrawal
+                        indistinguishable from hundreds of others.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-amber-500 mt-1">5.</span>
+                    <div>
+                      <strong className="text-sm text-gray-300">
+                        Make Privacy the Default
+                      </strong>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Regular use of privacy features benefits everyone by making the privacy pool
+                        larger and more diverse. Your privacy helps others, and their privacy helps you.
                       </p>
                     </div>
                   </div>
