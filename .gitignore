@@ -11,3 +11,14 @@ target/
 test-ledger/
 .DS_Store
 *.log
+
+# Private documentation (internal development notes)
+HELIUS_SETUP.md
+IMPLEMENTATION_COMPLETE.md
+PRIVACY_MIXER_README.md
+SUPABASE_SCHEMA.md
+TURBOPACK_FIX.md
+WALLET_CONNECTION.md
+app-README.md
+docs/FIXES_2026-01-29.md
+docs/NEXT_STEPS.md

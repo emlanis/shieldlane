@@ -7,25 +7,31 @@ Shieldlane is built as a privacy-preserving wrapper around Solana, integrating m
 ## Component Overview
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Frontend (Next.js)                    │
-│  ┌─────────────┐  ┌─────────────┐  ┌────────────────┐  │
-│  │  Dashboard  │  │Stealth Mode │  │  Monitor Page  │  │
-│  └─────────────┘  └─────────────┘  └────────────────┘  │
-└────────────────┬────────────────┬────────────────┬──────┘
-                 │                │                │
-      ┌──────────▼────┐  ┌────────▼──────┐  ┌────▼─────┐
-      │ Privacy Cash  │  │  MagicBlock   │  │  Helius  │
-      │  SDK Wrapper  │  │  API Client   │  │   RPC    │
-      └──────────┬────┘  └────────┬──────┘  └────┬─────┘
-                 │                │              │
-      ┌──────────▼────────────────▼──────────────▼─────┐
-      │              Solana Blockchain (Devnet)         │
-      │  ┌──────────────┐        ┌─────────────────┐   │
-      │  │ Privacy Cash │        │ MagicBlock PERs       │   │
-      │  │  Program     │        │  Smart Contract │   │
-      │  └──────────────┘        └─────────────────┘   │
-      └──────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                    Frontend (Next.js)                         │
+│  ┌──────────┐  ┌──────────┐  ┌───────────┐  ┌────────────┐  │
+│  │Dashboard │  │  Stealth │  │   Mixer   │  │  Monitor   │  │
+│  └──────────┘  └──────────┘  └───────────┘  └────────────┘  │
+└────────┬──────────────┬──────────────┬──────────────┬────────┘
+         │              │              │              │
+    ┌────▼────┐   ┌─────▼─────┐  ┌────▼────────┐  ┌─▼──────┐
+    │Privacy  │   │  Privacy  │  │ Privacy     │  │Helius  │
+    │Cash SDK │   │Cash (ZK)  │  │Mixer (TEE)  │  │  RPC   │
+    └────┬────┘   └─────┬─────┘  └────┬────────┘  └─┬──────┘
+         │              │              │             │
+         │         ┌────▼─────┐   ┌────▼────────┐   │
+         │         │ Layer 1: │   │  Layer 2:   │   │
+         │         │Groth16 ZK│   │MagicBlock   │   │
+         │         │  SNARKs  │   │Intel TDX TEE│   │
+         │         └────┬─────┘   └────┬────────┘   │
+         │              │              │             │
+      ┌──▼──────────────▼──────────────▼─────────────▼─────┐
+      │           Solana Blockchain (Devnet)                │
+      │  ┌─────────────────────┐  ┌────────────────────┐   │
+      │  │  Light Protocol     │  │  MagicBlock TEE    │   │
+      │  │  (Privacy Cash)     │  │  (Secure Enclaves) │   │
+      │  └─────────────────────┘  └────────────────────┘   │
+      └───────────────────────────────────────────────────────┘
 ```
 
 ## Core Libraries
@@ -53,29 +59,30 @@ Shieldlane is built as a privacy-preserving wrapper around Solana, integrating m
    - On-chain verification without revealing commitment
    - Nullifier prevents double-spending
 
-### 2. MagicBlock Client (`lib/shadowwire.ts`)
+### 2. Privacy Mixer (`lib/privacyMixer.ts`)
 
-**Purpose**: Interface with MagicBlock PERs API for Bulletproof-protected transfers
+**Purpose**: Dual-layer privacy combining Privacy Cash ZK-SNARKs with MagicBlock TEE
 
 **Key Methods**:
-- `generateApiKey(wallet)` - Get API credentials
-- `registerShadowId(wallet, signature)` - Register for privacy features
-- `depositToPool(wallet, amount)` - Fund privacy pool
-- `executeStealthTransfer(mode, sender, recipient, amount)` - Private transfer
-- `getPoolBalance(wallet)` - Query pool balance
+- `mix(sourceKeypair, destinationPubkey, amount)` - Execute multi-hop mixing
+- `createEphemeralAccounts(count)` - Generate temporary keypairs for mixing
+- `delegateAccount(account, ownerProgram)` - Delegate to MagicBlock TEE
+- `executeHopTransfer(from, to, amount)` - Execute single hop inside TEE
 
-**Privacy Modes**:
+**Privacy Architecture**:
 
-**External Mode**:
-- Sender hidden using Groth16 ZK proofs
-- Amount and recipient visible
-- Use case: Withdrawals to exchanges (need visible amount)
+**Layer 1: Privacy Cash (ZK-SNARKs)**:
+- Sender identity hidden using Groth16 ZK proofs
+- Privacy Cash account serves as mixing source
+- Amount and recipient visible on-chain
+- Use case: Sender anonymity for everyday transfers
 
-**Internal Mode**:
-- Everything encrypted
-- TEE Privacy prove amount validity
-- ElGamal encryption on BN254 curve
-- Use case: Maximum privacy transfers
+**Layer 2: MagicBlock TEE**:
+- Multi-hop transfers (3-5 randomized hops)
+- Ephemeral accounts delegated to Intel TDX secure enclaves
+- Hardware-verified confidential execution
+- Complete transaction privacy - sender, amount, recipient, patterns all hidden
+- Use case: Maximum privacy for sensitive transfers
 
 ### 3. Surveillance Monitor (`lib/surveillance.ts`)
 

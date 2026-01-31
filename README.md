@@ -6,15 +6,15 @@ A privacy-preserving wallet wrapper for high-value Solana users (whales, DAOs, t
 
 ## 🎯 Overview
 
-Shieldlane is a comprehensive privacy solution that shields transaction history and balances for Solana users who need protection from surveillance, front-running, and MEV extraction. Built with cutting-edge cryptographic primitives including ZK-SNARKs and TEE (Trusted Execution Environment) technology.
+Shieldlane is a comprehensive privacy solution that shields transaction history and balances for Solana users who need protection from surveillance, front-running, and MEV extraction. Built with **dual-layer privacy architecture** combining ZK-SNARKs (Privacy Cash) and TEE (MagicBlock).
 
 ### Key Features
 
-- **🔒 Private Balance Viewing**: Compare what surveillance tools see vs. your actual balance
-- **👻 Stealth Mode Transfers**: Two privacy modes (External & Internal) for different use cases
-- **📊 Surveillance Monitor**: Real-time analysis of what trackers can detect about your wallet
-- **📚 Educational Content**: Learn about wallet surveillance without jargon
-- **🎓 Privacy Score**: Get actionable recommendations to improve your privacy
+- **🔒 Privacy Cash**: Shield your holdings in ZK-SNARK privacy pools using Groth16 zero-knowledge proofs
+- **👻 Stealth Mode**: Hide sender identity with Privacy Cash ZK proofs for everyday private transfers
+- **🔀 Privacy Mixer**: Maximum privacy combining Privacy Cash + MagicBlock TEE for complete transaction confidentiality
+- **📊 Surveillance Monitor**: Real-time analysis of what trackers can detect about your wallet with privacy score
+- **📚 Educational Content**: Learn about wallet surveillance and privacy-enhancing technologies
 
 ## 🏆 Target Bounties
 
@@ -96,8 +96,8 @@ NEXT_PUBLIC_PRIVACY_CASH_PROGRAM_ID=9fhQBbumKEFuXtMBDw8AaQyAjCorLGJQiS3skWZdQyQD
 - **Blockchain**: Solana (Devnet)
 - **Wallet Integration**: Solana Wallet Adapter
 - **Privacy Protocols**:
-  - Privacy Cash SDK (ZK-SNARKs)
-  - MagicBlock SDK (TEE, Private Ephemeral Rollups)
+  - Privacy Cash (Light Protocol - Groth16 ZK-SNARKs)
+  - MagicBlock TEE (Intel TDX Trusted Execution Environments)
 - **RPC**: Helius
 - **State Management**: Zustand
 - **UI Components**: Custom components with dark theme
@@ -132,17 +132,19 @@ Shows two views:
 - **What Trackers See**: Public balance visible on block explorers
 - **Your Actual Balance**: Total holdings including privacy pools
 
-### 2. Stealth Mode Transfers
+### 2. Privacy Technologies
 
-**External Mode (Sender Hidden)**
-- ✅ Sender identity hidden using ZK proofs
-- ⚠️ Amount and recipient visible
-- 📋 Best for: Withdrawals to exchanges
+**Stealth Mode (Privacy Cash ZK-SNARKs)**
+- ✅ Sender identity hidden using Groth16 ZK proofs
+- ⚠️ Amount and recipient visible on-chain
+- 📋 Best for: Private withdrawals to exchanges or wallets
+- ⚡ Fast, efficient privacy for everyday transfers
 
-**Internal Mode (Maximum Privacy)**
-- ✅ Everything hidden - sender, amount, recipient
-- ✅ TEE (Trusted Execution Environment) via MagicBlock PERs
-- 📋 Best for: Sensitive transactions
+**Privacy Mixer (Privacy Cash + MagicBlock TEE)**
+- ✅ Maximum privacy - sender, amount, recipient, and patterns all hidden
+- ✅ Combines ZK-SNARKs with Intel TDX Trusted Execution Environments
+- 📋 Best for: Complete transaction confidentiality
+- 🔐 Hardware-guaranteed privacy with attestation
 
 ### 3. Surveillance Monitor
 
@@ -164,22 +166,22 @@ Analyzes:
 
 ### MagicBlock Integration
 
-**Private Ephemeral Rollups (PERs)**
+**Intel TDX Trusted Execution Environments**
 
-The MagicBlock SDK is now integrated and provides:
+The Privacy Mixer integrates MagicBlock TEE to provide hardware-level privacy:
 
-- **Account Delegation**: Delegate accounts to Ephemeral Rollup using `createDelegateInstruction()`
-- **ConnectionMagicRouter**: Automatic routing between base chain and ER
-- **Delegation Status Checking**: Verify if accounts are delegated with `getDelegationStatus()`
-- **Private Execution**: Transactions executed through delegated accounts run in the ER
-- **TEE Privacy**: Full TEE (Trusted Execution Environment) features available on mainnet
+- **TEE Delegation**: Delegate Privacy Cash accounts to MagicBlock's Intel TDX secure enclaves
+- **Multi-Hop Mixing**: 3-5 randomized hops through ephemeral accounts inside TEE
+- **Hardware Attestation**: Cryptographic proof of correct execution in secure enclave
+- **Complete Privacy**: Sender, amount, recipient, and transaction patterns all hidden
+- **Dual-Layer Security**: Combines Privacy Cash ZK-SNARKs with MagicBlock TEE
 
 **Implementation Status:**
-- ✅ SDK installed (`@magicblock-labs/ephemeral-rollups-sdk@0.8.4`)
-- ✅ Account delegation implemented in `useStealthMode` hook
-- ✅ ConnectionMagicRouter integrated for automatic routing
-- ✅ Internal mode transfers use MagicBlock PERs
-- ⏳ TEE attestation verification (requires MagicBlock TEE RPC on devnet)
+- ✅ MagicBlock SDK integrated (`@magicblock-labs/ephemeral-rollups-sdk`)
+- ✅ Privacy Mixer implemented with ephemeral account delegation
+- ✅ Multi-hop transfers execute inside TEE secure enclaves
+- ✅ Server-side mixing protects ephemeral keypairs
+- ✅ Real-time progress tracking for mixing hops
 
 ## 📊 Surveillance Detection
 
