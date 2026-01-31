@@ -54,12 +54,12 @@ export const PrivacyMixer: FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-white">Privacy Mixer</h2>
           <p className="text-sm text-gray-400 mt-1">
-            Dual-layer privacy: ZK-SNARKs + MagicBlock TEE
+            MagicBlock TEE delegation with Privacy Cash
           </p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-lg">
           <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-xs font-medium text-gray-300">Enhanced Privacy</span>
+          <span className="text-xs font-medium text-gray-300">TEE Privacy</span>
         </div>
       </div>
 
@@ -72,10 +72,9 @@ export const PrivacyMixer: FC = () => {
               1
             </div>
             <div>
-              <p className="font-medium text-gray-200">Privacy Cash Withdrawal</p>
+              <p className="font-medium text-gray-200">Privacy Cash Source</p>
               <p className="text-sm text-gray-400">
-                Withdraw from Privacy Cash pool using ZK-SNARKs (Groth16 proofs) to hide your
-                identity
+                Withdraws from Privacy Cash pool where sender is already hidden via ZK-SNARKs
               </p>
             </div>
           </div>
@@ -84,10 +83,9 @@ export const PrivacyMixer: FC = () => {
               2
             </div>
             <div>
-              <p className="font-medium text-gray-200">MagicBlock TEE Transfer</p>
+              <p className="font-medium text-gray-200">TEE Delegation</p>
               <p className="text-sm text-gray-400">
-                Transfer executes through MagicBlock's ConnectionMagicRouter, which automatically
-                routes to TEE if account is delegated
+                Ephemeral account gets delegated to MagicBlock TEE using SystemProgram.assign and createDelegateInstruction
               </p>
             </div>
           </div>
@@ -96,10 +94,9 @@ export const PrivacyMixer: FC = () => {
               3
             </div>
             <div>
-              <p className="font-medium text-gray-200">Complete Privacy</p>
+              <p className="font-medium text-gray-200">Recipient Transfer</p>
               <p className="text-sm text-gray-400">
-                Recipient receives SOL with sender identity hidden by ZK proofs and transaction
-                routed through MagicBlock infrastructure
+                Final transfer to recipient from TEE-delegated account with timing obfuscation
               </p>
             </div>
           </div>
@@ -296,9 +293,9 @@ export const PrivacyMixer: FC = () => {
           <div className="p-3 bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-500/20 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <span className="w-2 h-2 bg-orange-400 rounded-full" />
-              <span className="text-sm font-medium text-gray-300">Dual-Layer</span>
+              <span className="text-sm font-medium text-gray-300">Timing Delays</span>
             </div>
-            <p className="text-xs text-gray-400">Combined ZK + TEE privacy</p>
+            <p className="text-xs text-gray-400">Random delays for transaction obfuscation</p>
           </div>
         </div>
       </div>
@@ -308,11 +305,9 @@ export const PrivacyMixer: FC = () => {
         <div className="flex items-start gap-3">
           <span className="text-blue-400">ℹ️</span>
           <div className="text-sm space-y-1">
-            <p className="font-medium text-blue-300">MagicBlock Integration Demo</p>
+            <p className="font-medium text-blue-300">MagicBlock TEE Integration</p>
             <p className="text-gray-400">
-              This demonstrates MagicBlock SDK integration using ConnectionMagicRouter and
-              delegation patterns. Transfers use MagicBlock's RPC which automatically routes to
-              Ephemeral Rollups when accounts are delegated.
+              Uses MagicBlock Ephemeral Rollups SDK for oncurve account delegation. Ephemeral accounts are delegated to TEE validators using SystemProgram.assign and createDelegateInstruction before executing the final transfer.
             </p>
           </div>
         </div>

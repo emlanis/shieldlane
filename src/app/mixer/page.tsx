@@ -15,7 +15,7 @@ export default function MixerPage() {
               Privacy Mixer
             </h1>
             <p className="text-lg text-gray-400">
-              Enhanced privacy through dual-layer protection: ZK-SNARKs + MagicBlock TEE
+              Enhanced privacy through dual-layer protection: ZK-SNARKs with MagicBlock TEE
             </p>
           </div>
 
@@ -41,17 +41,13 @@ export default function MixerPage() {
                   Layer 2: MagicBlock TEE (Ephemeral Rollups)
                 </h4>
                 <p>
-                  Your funds hop through 3-5 ephemeral accounts inside Intel TDX Trusted Execution
-                  Environments (secure enclaves). These hops execute privately in TEE, hiding the
-                  transaction path and timing.
+                  Ephemeral account is delegated to Intel TDX Trusted Execution Environments using MagicBlock SDK. The delegation process uses SystemProgram.assign to transfer ownership to the delegation program, then createDelegateInstruction to register with TEE validators.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-300 mb-2">Complete Privacy</h4>
                 <p>
-                  The combination breaks on-chain linkage: Privacy Cash hides WHO sent the funds,
-                  MagicBlock TEE hides HOW the funds moved. The recipient receives clean SOL with no
-                  traceable connection to the sender.
+                  Privacy Cash hides who sent the funds through ZK-SNARKs. MagicBlock TEE delegation adds an additional privacy layer by routing the transfer through trusted execution environments. Random timing delays further obfuscate transaction patterns.
                 </p>
               </div>
               <div className="pt-3 border-t border-zinc-900">
@@ -92,10 +88,10 @@ export default function MixerPage() {
               <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-green-500">✓</span>
-                  <span className="font-medium text-gray-300">Protection from Analysis</span>
+                  <span className="font-medium text-gray-300">TEE Execution Privacy</span>
                 </div>
                 <p className="text-gray-400">
-                  Defeat chain analysis tools through multi-hop obfuscation
+                  Transactions routed through hardware-secured enclaves for private execution
                 </p>
               </div>
               <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
