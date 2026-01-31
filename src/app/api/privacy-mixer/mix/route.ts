@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { getServerSupabase } from '@/lib/supabase';
-import { createSimplePrivacyMixer } from '@/lib/privacyMixerSimplified';
+import { createPrivacyMixer } from '@/lib/privacyMixer';
 import * as crypto from 'crypto';
 
 /**
@@ -137,13 +137,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Simplified Privacy Mixer instance (Privacy Cash only, no MagicBlock delegation)
-    // TODO: Add MagicBlock TEE integration once oncurve delegation is working
-    const mixer = createSimplePrivacyMixer(heliusRpcUrl, {
-      minDelayMs: 2000,
-      maxDelayMs: 8000,
-      minAmount: 0.01 * LAMPORTS_PER_SOL,
-    });
+    // Create Privacy Mixer instance with MagicBlock TEE integration
+    const magicblockRpc = process.env.NEXT_PUBLIC_MAGICBLOCK_RPC || 'https://devnet-router.magicblock.app';
+    const mixer = createPrivacyMixer(
+      heliusRpcUrl,
+      magicblockRpc,
+      {
+        minHops: 3,
+        maxHops: 5,
+        minDelayMs: 2000,
+        maxDelayMs: 8000,
+        minAmount: 0.01 * LAMPORTS_PER_SOL,
+      }
+    );
 
     // Generate mixing session ID
     const mixId = crypto.randomBytes(16).toString('hex');
@@ -166,11 +172,11 @@ export async function POST(request: NextRequest) {
       console.warn('[Privacy Mixer] Failed to create session:', sessionError);
     }
 
-    // Execute the mix
-    console.log('[Privacy Mixer] Starting simple mix execution (Privacy Cash only)...');
+    // Execute the mix with MagicBlock TEE delegation
+    console.log('[Privacy Mixer] Starting mix with MagicBlock TEE delegation...');
 
     const recipientPubkey = new PublicKey(recipient);
-    const txSignature = await mixer.mix(
+    const result = await mixer.mix(
       sourceKeypair,
       recipientPubkey,
       amount,
@@ -179,13 +185,13 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    console.log('[Privacy Mixer] Mix completed:', txSignature);
+    console.log('[Privacy Mixer] Mix completed:', result);
 
     // Update session with completion
     await supabase
       .from('privacy_transactions')
       .update({
-        signature: txSignature,
+        signature: result.signature,
         status: 'confirmed',
         confirmed_at: new Date().toISOString(),
       })
@@ -202,8 +208,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       mixId,
-      signature: txSignature,
-      message: `Successfully mixed ${amount / LAMPORTS_PER_SOL} SOL via Privacy Cash (sender hidden via ZK-SNARKs)`,
+      signature: result.signature,
+      hops: result.hops,
+      message: `Successfully mixed ${amount / LAMPORTS_PER_SOL} SOL via Privacy Cash + MagicBlock TEE (${result.hops} hops, sender hidden via ZK-SNARKs, path obfuscated via TEE)`,
     });
   } catch (error: any) {
     console.error('[Privacy Mixer] Error:', error);
