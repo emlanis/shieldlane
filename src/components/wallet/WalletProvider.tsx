@@ -21,12 +21,12 @@ export const WalletProvider: FC<WalletProviderProps> = ({ children }) => {
   // Determine network from environment
   const network = (process.env.NEXT_PUBLIC_SOLANA_NETWORK as WalletAdapterNetwork) || WalletAdapterNetwork.Devnet;
 
-  // Get RPC endpoint
+  // Get RPC endpoint - use same logic as rest of app
   const endpoint = useMemo(() => {
-    const heliusApiKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+    const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
 
-    if (heliusApiKey && heliusApiKey !== '') {
-      return `https://rpc.helius.xyz/?api-key=${heliusApiKey}`;
+    if (rpcUrl && rpcUrl !== '') {
+      return rpcUrl;
     }
 
     return clusterApiUrl(network);
