@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   description: "Your transactions. Your business. Your Shieldlane. A privacy-preserving wallet wrapper for high-value Solana users.",
   keywords: ["Solana", "Privacy", "Wallet", "ZK-SNARK", "Bulletproofs", "DeFi"],
   authors: [{ name: "Shieldlane Team" }],
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
   openGraph: {
     title: "Shieldlane - Privacy-Preserving Wallet for Solana",
     description: "Your transactions. Your business. Your Shieldlane.",
