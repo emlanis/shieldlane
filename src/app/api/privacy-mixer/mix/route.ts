@@ -173,22 +173,29 @@ export async function POST(request: NextRequest) {
     console.log('[Privacy Mixer] Starting mix with MagicBlock TEE delegation...');
 
     const recipientPubkey = new PublicKey(recipient);
-    const result = await mixer.mix(
+
+    // Track hop progress
+    let hopsCompleted = 0;
+    let totalHops = 0;
+
+    const signature = await mixer.mix(
       sourceKeypair,
       recipientPubkey,
       amount,
-      (stage) => {
-        console.log(`[Privacy Mixer] ${stage}`);
+      (completed, total) => {
+        hopsCompleted = completed;
+        totalHops = total;
+        console.log(`[Privacy Mixer] Progress: ${completed}/${total} hops`);
       }
     );
 
-    console.log('[Privacy Mixer] Mix completed:', result);
+    console.log('[Privacy Mixer] Mix completed:', signature);
 
     // Update session with completion
     await supabase
       .from('privacy_transactions')
       .update({
-        signature: result.signature,
+        signature: signature,
         status: 'confirmed',
         confirmed_at: new Date().toISOString(),
       })
@@ -205,9 +212,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       mixId,
-      signature: result.signature,
-      hops: result.hops,
-      message: `Successfully mixed ${amount / LAMPORTS_PER_SOL} SOL via Privacy Cash + MagicBlock TEE (${result.hops} hops, sender hidden via ZK-SNARKs, path obfuscated via TEE)`,
+      signature: signature,
+      hops: totalHops,
+      message: `Successfully mixed ${amount / LAMPORTS_PER_SOL} SOL via Privacy Cash + MagicBlock TEE (${totalHops} hops, sender hidden via ZK-SNARKs, path obfuscated via TEE)`,
     });
   } catch (error: any) {
     console.error('[Privacy Mixer] Error:', error);
