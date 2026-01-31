@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { getServerSupabase } from '@/lib/supabase';
-import { createPrivacyMixer } from '@/lib/privacyMixer';
+import { createSimplePrivacyMixer } from '@/lib/privacyMixerSimplified';
 import * as crypto from 'crypto';
 
 /**
@@ -137,16 +137,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get Magic Router URL (MUST use router, not rpc)
-    const magicRouterUrl =
-      process.env.NEXT_PUBLIC_MAGICBLOCK_RPC ||
-      'https://devnet-router.magicblock.app';
-
-    // Create Privacy Mixer instance
-    const mixer = createPrivacyMixer(magicRouterUrl, {
-      minHops: 3,
-      maxHops: 5,
-      hopDelayMs: 2000,
+    // Create Simplified Privacy Mixer instance (Privacy Cash only, no MagicBlock delegation)
+    // TODO: Add MagicBlock TEE integration once oncurve delegation is working
+    const mixer = createSimplePrivacyMixer(heliusRpcUrl, {
+      minDelayMs: 2000,
+      maxDelayMs: 8000,
       minAmount: 0.01 * LAMPORTS_PER_SOL,
     });
 
@@ -172,19 +167,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Execute the mix
-    console.log('[Privacy Mixer] Starting mix execution...');
-    let hopsCompleted = 0;
-    let totalHops = 0;
+    console.log('[Privacy Mixer] Starting simple mix execution (Privacy Cash only)...');
 
     const recipientPubkey = new PublicKey(recipient);
     const txSignature = await mixer.mix(
       sourceKeypair,
       recipientPubkey,
       amount,
-      (completed, total) => {
-        hopsCompleted = completed;
-        totalHops = total;
-        console.log(`[Privacy Mixer] Progress: ${completed}/${total} hops`);
+      (stage) => {
+        console.log(`[Privacy Mixer] ${stage}`);
       }
     );
 
@@ -212,8 +203,7 @@ export async function POST(request: NextRequest) {
       success: true,
       mixId,
       signature: txSignature,
-      hops: totalHops,
-      message: `Successfully mixed ${amount / LAMPORTS_PER_SOL} SOL through ${totalHops} hops`,
+      message: `Successfully mixed ${amount / LAMPORTS_PER_SOL} SOL via Privacy Cash (sender hidden via ZK-SNARKs)`,
     });
   } catch (error: any) {
     console.error('[Privacy Mixer] Error:', error);

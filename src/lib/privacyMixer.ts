@@ -25,6 +25,7 @@ import {
   ConnectionMagicRouter,
   createDelegateInstruction,
   DEFAULT_PRIVATE_VALIDATOR,
+  DELEGATION_PROGRAM_ID,
 } from '@magicblock-labs/ephemeral-rollups-sdk';
 
 // Use standard Helius RPC for non-delegated transactions
@@ -94,21 +95,30 @@ export class PrivacyMixer {
   }
 
   /**
-   * Delegate an account to MagicBlock's TEE
-   * IMPORTANT: The delegated account itself must sign the delegation transaction
+   * Delegate an oncurve account to MagicBlock's TEE
+   * CRITICAL: For oncurve accounts, must ASSIGN to delegation program first!
+   * Based on: https://github.com/magicblock-labs/magicblock-engine-examples/tree/main/oncurve-delegation
    */
   private async delegateToTEE(
-    accountKeypair: Keypair
+    accountKeypair: Keypair,
+    feePayerKeypair: Keypair
   ): Promise<string> {
     try {
       // Wait a bit to ensure the account is fully propagated
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      console.log(`[Privacy Mixer] Delegating account ${accountKeypair.publicKey.toBase58()} to TEE...`);
+      console.log(`[Privacy Mixer] Delegating oncurve account ${accountKeypair.publicKey.toBase58()} to TEE...`);
 
+      // Step 1: ASSIGN the account to the delegation program (required for oncurve accounts!)
+      const assignIx = SystemProgram.assign({
+        accountPubkey: accountKeypair.publicKey,
+        programId: DELEGATION_PROGRAM_ID,
+      });
+
+      // Step 2: Create delegate instruction
       const delegateIx = createDelegateInstruction(
         {
-          payer: accountKeypair.publicKey,
+          payer: feePayerKeypair.publicKey,
           delegatedAccount: accountKeypair.publicKey,
           ownerProgram: SystemProgram.programId,
           validator: DEFAULT_PRIVATE_VALIDATOR,
@@ -118,34 +128,41 @@ export class PrivacyMixer {
         }
       );
 
-      let transaction = new Transaction().add(delegateIx);
-      transaction.feePayer = accountKeypair.publicKey;
+      // Combine assign + delegate in single transaction
+      let transaction = new Transaction().add(assignIx, delegateIx);
+      transaction.feePayer = feePayerKeypair.publicKey;
 
-      console.log(`[Privacy Mixer] Sending delegation transaction to MagicRouter...`);
+      console.log(`[Privacy Mixer] Sending assign + delegate transaction to BASE LAYER...`);
 
-      // IMPORTANT: Use sendTransaction directly (do NOT call prepareTransaction first)
-      // sendTransaction internally calls getLatestBlockhashForTransaction which uses
-      // the custom "getBlockhashForAccounts" RPC method to route to ER or Solana
-      // The delegated account MUST sign the transaction (required by SDK)
-      const signature = await this.magicConnection.sendTransaction(transaction, [accountKeypair], {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-      });
+      // CRITICAL: Send to BASE LAYER (regular Solana RPC), NOT ephemeral or router!
+      // Both the oncurve account AND fee payer must sign
+      const { blockhash, lastValidBlockHeight } = await this.regularConnection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
+      transaction.lastValidBlockHeight = lastValidBlockHeight;
+
+      transaction.sign(accountKeypair, feePayerKeypair);
+
+      const signature = await this.regularConnection.sendRawTransaction(
+        transaction.serialize(),
+        {
+          skipPreflight: true, // Skip preflight as recommended in example
+          preflightCommitment: 'confirmed',
+        }
+      );
 
       console.log(`[Privacy Mixer] Delegation sent, signature: ${signature}`);
 
-      // Wait for transaction to settle
-      // MagicBlock processes transactions in TEE and may not support standard confirmation methods
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Wait for confirmation
+      try {
+        await this.regularConnection.confirmTransaction(signature, 'confirmed');
+        console.log(`[Privacy Mixer] Delegation confirmed: ${signature}`);
+      } catch (error) {
+        console.warn(`[Privacy Mixer] Confirmation failed, but transaction may have succeeded: ${error}`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
 
-      console.log(`[Privacy Mixer] Delegation complete: ${signature}`);
       return signature;
     } catch (error: any) {
-      // Get detailed logs from SendTransactionError
-      if (error instanceof SendTransactionError) {
-        const logs = await error.getLogs(this.magicConnection);
-        console.error('[Privacy Mixer] SendTransactionError logs:', logs);
-      }
       console.error(`[Privacy Mixer] Delegation failed:`, error);
       throw error;
     }
@@ -308,7 +325,7 @@ export class PrivacyMixer {
 
       // Step 2: Delegate ONLY THE FIRST account to TEE (after funding)
       console.log('[Privacy Mixer] Delegating first account to TEE...');
-      await this.delegateToTEE(ephemeralAccounts[0]);
+      await this.delegateToTEE(ephemeralAccounts[0], ephemeralAccounts[0]);
 
       // Step 3: Hop through ephemeral accounts
       // Fund each account, then delegate it, then transfer from it
@@ -325,7 +342,7 @@ export class PrivacyMixer {
         // Delegate the newly funded account (if not the last one)
         if (i < totalHops - 2) {
           console.log(`[Privacy Mixer] Delegating ephemeral account ${i + 1} to TEE...`);
-          await this.delegateToTEE(to);
+          await this.delegateToTEE(to, to);
         }
 
         onProgress?.(i + 1, totalHops);

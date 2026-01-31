@@ -99,13 +99,11 @@ export function usePrivacyMixer() {
       // Update with completion
       setProgress({
         stage: 'complete',
-        message: `Mix completed through ${mixData.hops} hops!`,
-        hopsCompleted: mixData.hops,
-        totalHops: mixData.hops,
+        message: mixData.message || 'Mix completed!',
         txSignature: mixData.signature,
       });
 
-      toast.success(`Mix completed! ${mixData.hops} hops executed through TEE`);
+      toast.success('Mix completed! Sender hidden via Privacy Cash ZK-SNARKs');
       setLoading(false);
       return true;
     } catch (error: any) {
