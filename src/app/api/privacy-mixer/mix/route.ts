@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL, Transaction, SystemProgram } from '@solana/web3.js';
 import { getServerSupabase } from '@/lib/supabase';
+import crypto from 'crypto';
+
+export const runtime = 'nodejs';
 
 /**
  * POST /api/privacy-mixer/mix
